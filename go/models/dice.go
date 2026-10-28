@@ -61,4 +61,5 @@ var (
 	DiceD10 = must(NewDice(&DiceData{Count: 1, Sides: 10}))
 	DiceD12 = must(NewDice(&DiceData{Count: 1, Sides: 12}))
 	Dice2D6 = must(NewDice(&DiceData{Count: 2, Sides: 6}))
+	Dice3D6 = must(NewDice(&DiceData{Count: 3, Sides: 6}))
 )
