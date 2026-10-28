@@ -16,6 +16,10 @@ type Weapon struct {
 	data *WeaponData
 }
 
+func (w Weapon) IsZero() bool {
+	return w.data == nil
+}
+
 func NewWeapon(data *WeaponData) (Weapon, error) {
 	if err := validateWeaponData(data); err != nil {
 		return Weapon{}, err
@@ -37,4 +41,12 @@ func validateWeaponData(data *WeaponData) error {
 	}
 
 	return nil
+}
+
+func (w Weapon) Name() string {
+	return w.data.Name
+}
+
+func (w Weapon) Ranges() Ranges {
+	return w.data.Ranges
 }
