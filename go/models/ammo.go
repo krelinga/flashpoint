@@ -6,7 +6,7 @@ import (
 )
 
 type AmmoData struct {
-	Name string
+	Name  string
 	Speed int
 	Range int
 }
@@ -39,11 +39,11 @@ func validateAmmoData(data *AmmoData) error {
 	}
 
 	if data.Speed <= 0 {
-		return fmt.Errorf("%w: Speed must be positive")
+		return fmt.Errorf("%w: Speed must be positive", ErrInvalidAmmoData)
 	}
 
 	if data.Range <= 0 {
-		return fmt.Errorf("%w: Range must be positive")
+		return fmt.Errorf("%w: Range must be positive", ErrInvalidAmmoData)
 	}
 
 	return nil
