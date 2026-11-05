@@ -6,6 +6,7 @@ import (
 )
 
 type DefenseData struct {
+	Facing            Facing
 	Barrier           int
 	Armor             int
 	MetaMaterialArmor int
@@ -31,6 +32,9 @@ func NewSide(data *DefenseData) (Defense, error) {
 func validateSideData(data *DefenseData) error {
 	if data == nil {
 		return fmt.Errorf("%w: data is nil", ErrInvalidDefenseData)
+	}
+	if !data.Facing.IsValid() {
+		return fmt.Errorf("%w: invalid facing", ErrInvalidDefenseData)
 	}
 	if data.Barrier < 0 {
 		return fmt.Errorf("%w: barrier is negative", ErrInvalidDefenseData)
