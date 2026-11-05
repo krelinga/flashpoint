@@ -1,5 +1,7 @@
 package models
 
+import "iter"
+
 type Facing int
 
 const (
@@ -36,5 +38,21 @@ func (f Facing) IsValid() bool {
 		return true
 	default:
 		return false
+	}
+}
+
+var allFacings = []Facing{FacingN, FacingNE, FacingSE, FacingS, FacingSW, FacingNW}
+
+func NumFacings() int {
+	return len(allFacings)
+}
+
+func AllFacings() iter.Seq[Facing] {
+	return func(yield func(Facing) bool) {
+		for _, facing := range allFacings {
+			if !yield(facing) {
+				return
+			}
+		}
 	}
 }
