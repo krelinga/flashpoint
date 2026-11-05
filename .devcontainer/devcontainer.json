@@ -4,5 +4,17 @@
     "ghcr.io/devcontainers/features/node:2": { "version": "lts" },
     "ghcr.io/devcontainers/features/go:1": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "[yaml]": {
+          "editor.defaultFormatter": "redhat.vscode-yaml"
+        }
+      }
+    }
   }
 }
