@@ -48,6 +48,10 @@ func validateSideData(data *DefenseData) error {
 	return nil
 }
 
+func (s Defense) Facing() Facing {
+	return s.data.Facing
+}
+
 func (s Defense) Barrier() int {
 	return s.data.Barrier
 }
