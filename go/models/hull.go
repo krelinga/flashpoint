@@ -82,32 +82,54 @@ func (h HullBoxes) Count() int {
 	return h.data.count
 }
 
+type hullData struct {
+	zone Zone
+	boxes []HullBoxes
+}
+
 type Hull struct {
-	data *[]HullBoxes
+	data *hullData
 }
 
 func (h Hull) IsZero() bool {
 	return h.data == nil
 }
 
-func NewHull(boxes ...HullBoxes) (Hull, error) {
-	if len(boxes) == 0 {
-		return Hull{}, fmt.Errorf("%w: no hull boxes provided", ErrInvalidHullBoxes)
+func NewHull(zone Zone, boxes ...HullBoxes) (Hull, error) {
+	data := &hullData{
+		zone: zone,
+		boxes: make([]HullBoxes, len(boxes)),
 	}
-	for i, b := range boxes {
+	copy(data.boxes, boxes)
+	if err := validateHullData(data); err != nil {
+		return Hull{}, err
+	}
+	return Hull{data: data}, nil
+}
+
+func validateHullData(data *hullData) error {
+	if !data.zone.IsValid() {
+		return fmt.Errorf("%w: invalid zone: %v", ErrInvalidHullBoxes, data.zone)
+	}
+	if len(data.boxes) == 0 {
+		return fmt.Errorf("%w: no hull boxes provided", ErrInvalidHullBoxes)
+	}
+	for i, b := range data.boxes {
 		if b.IsZero() {
-			return Hull{}, fmt.Errorf("%w: invalid hull box at index %d", ErrInvalidHullBoxes, i)
+			return fmt.Errorf("%w: invalid hull box at index %d", ErrInvalidHullBoxes, i)
 		}
 	}
-	data := make([]HullBoxes, len(boxes))
-	copy(data, boxes)
-	return Hull{data: &data}, nil
+	return nil
+}
+
+func (h Hull) Zone() Zone {
+	return h.data.zone
 }
 
 func (h Hull) All() iter.Seq2[int, HullBox] {
 	return func(yield func(int, HullBox) bool) {
 		i := 0
-		for _, boxes := range *h.data {
+		for _, boxes := range h.data.boxes {
 			for range boxes.Count() {
 				if !yield(i, boxes.Box()) {
 					return
@@ -120,7 +142,7 @@ func (h Hull) All() iter.Seq2[int, HullBox] {
 
 func (h Hull) Total() int {
 	total := 0
-	for _, boxes := range *h.data {
+	for _, boxes := range h.data.boxes {
 		total += boxes.Count()
 	}
 	return total
@@ -129,7 +151,7 @@ func (h Hull) Total() int {
 func (h Hull) Filter(hullBox HullBox) iter.Seq[int] {
 	return func(yield func(int) bool) {
 		i := 0
-		for _, boxes := range *h.data {
+		for _, boxes := range h.data.boxes {
 			if boxes.Box() != hullBox {
 				i += boxes.Count()
 				continue
