@@ -8,6 +8,7 @@ import (
 type MountData struct {
 	Count  int
 	Weapon Weapon
+	Points int
 	Arc    Arc
 }
 
@@ -35,6 +36,9 @@ func validateMountData(data *MountData) error {
 	if data.Count <= 0 {
 		return fmt.Errorf("%w: count is not positive", ErrInvalidMountData)
 	}
+	if data.Points <= 0 {
+		return fmt.Errorf("%w: points is not positive", ErrInvalidMountData)
+	}
 	if data.Weapon.IsZero() {
 		return fmt.Errorf("%w: weapon is zero", ErrInvalidMountData)
 	}
@@ -46,6 +50,10 @@ func validateMountData(data *MountData) error {
 
 func (m Mount) Count() int {
 	return m.data.Count
+}
+
+func (m Mount) Points() int {
+	return m.data.Points
 }
 
 func (m Mount) Weapon() Weapon {
