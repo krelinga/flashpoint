@@ -6,7 +6,7 @@ type Simulation struct {
 	Logger Logger
 }
 
-func (s *Simulation) Run() {
+func (s Simulation) Run() {
 	if len(s.Ships) != 2 {
 		panic("Simulation requires exactly 2 ships")
 	}

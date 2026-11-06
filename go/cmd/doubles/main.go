@@ -29,7 +29,7 @@ func main() {
 		LaserDice: Sides(10),
 	}
 
-	sim := &Simulation{
+	sim := Simulation{
 		Ships: []*Ship{griffin, janus},
 		Roller: &RandomRoller{Rand: rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))},
 		Logger: ConsoleLogger{},
