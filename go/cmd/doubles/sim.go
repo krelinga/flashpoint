@@ -44,11 +44,11 @@ func (s *Simulation) Run() {
 			}
 			target := turnOrder[(i+1)%len(turnOrder)]
 			attackDice := Add(ship.LaserDice, ship.Crew)
-			event := AttackEvent{
-				Attacker: ship,
-				Target:   target,
-			}
 			for range ship.NumLasers {
+				event := AttackEvent{
+					Attacker: ship,
+					Target:   target,
+				}
 				if result := attackDice.Roll(s.Roller); result >= target.Aspect {
 					damage := target.TakeDamage(ship.LaserDamage)
 					event.Damage = &damage

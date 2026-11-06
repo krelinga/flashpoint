@@ -5,28 +5,28 @@ import "math/rand/v2"
 func main() {
 	griffin := &Ship{
 		Name: "Griffin",
-		Crew: Multiple(2, Sides(6)),
+		Crew: Sides(8),
 		Aspect: 11,
 		Barrier: 7,
 		Armor: 3,
 		Hull: 10,
 		Core: 16,
-		NumLasers: 4,
-		LaserDamage: 3,
+		NumLasers: 2,
+		LaserDamage: 6,
 		LaserDice: Sides(8),
 	}
 
 	janus := &Ship{
 		Name: "Janus",
-		Crew: Sides(2),
+		Crew: Sides(8),
 		Aspect: 11,
 		Barrier: 10,
 		Armor: 3,
 		Hull: 15,
 		Core: 12,
-		NumLasers: 4,
-		LaserDamage: 4,
-		LaserDice: Sides(2),
+		NumLasers: 2,
+		LaserDamage: 8,
+		LaserDice: Sides(10),
 	}
 
 	sim := &Simulation{
