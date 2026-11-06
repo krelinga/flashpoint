@@ -34,6 +34,7 @@ func main() {
 		Ships: []*Ship{griffin, janus},
 		Roller: &RandomRoller{Rand: rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))},
 		Logger: ConsoleLogger{},
+		MaxRounds: 10,
 	}
 
 	sim.Run()
@@ -42,7 +43,9 @@ func main() {
 		println("Janus wins!")
 	} else if janus.IsDestroyed() && !griffin.IsDestroyed() {
 		println("Griffin wins!")
-	} else {
+	} else if janus.IsDestroyed() && griffin.IsDestroyed() {
 		println("Both ships destroyed!")
+	} else {
+		println("Both ships survived!")
 	}
 }

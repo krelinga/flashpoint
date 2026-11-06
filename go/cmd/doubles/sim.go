@@ -4,9 +4,10 @@ type Simulation struct {
 	Ships  []*Ship
 	Roller Roller
 	Logger Logger
+	MaxRounds int
 }
 
-func (s Simulation) Run() {
+func (s Simulation) Run() int {
 	if len(s.Ships) != 2 {
 		panic("Simulation requires exactly 2 ships")
 	}
@@ -17,7 +18,11 @@ func (s Simulation) Run() {
 		s.Logger = NullLogger{}
 	}
 
+	rounds := 0
 	done := func() bool {
+		if s.MaxRounds > 0 && rounds >= s.MaxRounds {
+			return true
+		}
 		return s.Ships[0].IsDestroyed() || s.Ships[1].IsDestroyed()
 	}
 
@@ -35,10 +40,9 @@ func (s Simulation) Run() {
 		}
 	}
 
-	round := 0
 	for !done() {
-		round++
-		s.Logger.Log(NewRoundEvent{Round: round})
+		rounds++
+		s.Logger.Log(NewRoundEvent{Round: rounds})
 		roundLogger := s.Logger.Child()
 		turnOrder := rollInitiative()
 		roundLogger.Log(InitiativeEvent{Winner: turnOrder[0]})
@@ -70,4 +74,5 @@ func (s Simulation) Run() {
 			}
 		}
 	}
+	return rounds
 }
