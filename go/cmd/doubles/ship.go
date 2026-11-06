@@ -22,6 +22,11 @@ type Ship struct {
 	AI bool
 }
 
+func (s *Ship) Clone() *Ship {
+	clone := *s
+	return &clone
+}
+
 type Damage struct {
 	Barrier        int
 	Armor          int

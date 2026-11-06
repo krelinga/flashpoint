@@ -1,21 +1,32 @@
 package main
 
 type Simulation struct {
-	Ships  []*Ship
-	Roller Roller
-	Logger Logger
+	Ships     []*Ship
+	Roller    Roller
+	Logger    Logger
 	MaxRounds int
 }
 
-func (s Simulation) Run() int {
+type Result struct {
+	Ships  []*Ship
+	Rounds int
+}
+
+func (s Simulation) RunOne() Result {
 	if len(s.Ships) != 2 {
 		panic("Simulation requires exactly 2 ships")
 	}
 	if s.Roller == nil {
 		panic("Simulation requires a Roller")
 	}
-	if s.Logger == nil {
-		s.Logger = NullLogger{}
+
+	var logger Logger = NullLogger{}
+	if s.Logger != nil {
+		logger = s.Logger
+	}
+	ships := make([]*Ship, 2)
+	for i, ship := range s.Ships {
+		ships[i] = ship.Clone()
 	}
 
 	rounds := 0
@@ -23,27 +34,27 @@ func (s Simulation) Run() int {
 		if s.MaxRounds > 0 && rounds >= s.MaxRounds {
 			return true
 		}
-		return s.Ships[0].IsDestroyed() || s.Ships[1].IsDestroyed()
+		return ships[0].IsDestroyed() || ships[1].IsDestroyed()
 	}
 
 	rollInitiative := func() []*Ship {
-		results := make([]int, len(s.Ships))
+		results := make([]int, len(ships))
 		for results[0] == results[1] {
-			for i, ship := range s.Ships {
+			for i, ship := range ships {
 				results[i] = ship.Crew.Roll(s.Roller)
 			}
 		}
 		if results[0] > results[1] {
-			return s.Ships
+			return ships
 		} else {
-			return []*Ship{s.Ships[1], s.Ships[0]}
+			return []*Ship{ships[1], ships[0]}
 		}
 	}
 
 	for !done() {
 		rounds++
-		s.Logger.Log(NewRoundEvent{Round: rounds})
-		roundLogger := s.Logger.Child()
+		logger.Log(NewRoundEvent{Round: rounds})
+		roundLogger := logger.Child()
 		turnOrder := rollInitiative()
 		roundLogger.Log(InitiativeEvent{Winner: turnOrder[0]})
 		for i, ship := range turnOrder {
@@ -59,7 +70,7 @@ func (s Simulation) Run() int {
 				event := AttackEvent{
 					Attacker: ship,
 					Target:   target,
-					AI : ai,
+					AI:       ai,
 				}
 				attackDice := Add(ship.LaserDice, ship.Crew)
 				if ai {
@@ -74,5 +85,16 @@ func (s Simulation) Run() int {
 			}
 		}
 	}
-	return rounds
+	return Result{
+		Ships:  ships,
+		Rounds: rounds,
+	}
+}
+
+func (s Simulation) RunMany(n int) []Result {
+	results := make([]Result, n)
+	for i := range n {
+		results[i] = s.RunOne()
+	}
+	return results
 }
