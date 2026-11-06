@@ -4,6 +4,7 @@ import "math/rand/v2"
 
 func main() {
 	griffin := &Ship{
+		Name: "Griffin",
 		Crew: Multiple(2, Sides(6)),
 		Aspect: 11,
 		Barrier: 7,
@@ -16,6 +17,7 @@ func main() {
 	}
 
 	janus := &Ship{
+		Name: "Janus",
 		Crew: Sides(2),
 		Aspect: 11,
 		Barrier: 10,
@@ -30,6 +32,7 @@ func main() {
 	sim := &Simulation{
 		Ships: []*Ship{griffin, janus},
 		Roller: &RandomRoller{Rand: rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))},
+		Logger: ConsoleLogger{},
 	}
 
 	sim.Run()

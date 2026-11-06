@@ -3,6 +3,7 @@ package main
 type Simulation struct {
 	Ships  []*Ship
 	Roller Roller
+	Logger Logger
 }
 
 func (s *Simulation) Run() {
@@ -11,6 +12,9 @@ func (s *Simulation) Run() {
 	}
 	if s.Roller == nil {
 		panic("Simulation requires a Roller")
+	}
+	if s.Logger == nil {
+		s.Logger = NullLogger{}
 	}
 
 	done := func() bool {
@@ -33,16 +37,23 @@ func (s *Simulation) Run() {
 
 	for !done() {
 		turnOrder := rollInitiative()
+		s.Logger.Log(InitiativeEvent{Winner: turnOrder[0]})
 		for i, ship := range turnOrder {
 			if ship.IsDestroyed() {
 				continue
 			}
 			target := turnOrder[(i+1)%len(turnOrder)]
 			attackDice := Add(ship.LaserDice, ship.Crew)
+			event := AttackEvent{
+				Attacker: ship,
+				Target:   target,
+			}
 			for range ship.NumLasers {
 				if result := attackDice.Roll(s.Roller); result >= target.Aspect {
+					event.Hit = true
 					target.TakeDamage(ship.LaserDamage)
 				}
+				s.Logger.Log(event)
 			}
 		}
 	}

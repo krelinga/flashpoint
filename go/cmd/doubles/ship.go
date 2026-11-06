@@ -1,6 +1,7 @@
 package main
 
 type Ship struct {
+	Name string
 	Crew Dice
 
 	Aspect int
