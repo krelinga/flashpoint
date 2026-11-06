@@ -35,13 +35,20 @@ func (s *Simulation) Run() {
 		}
 	}
 
+	round := 0
 	for !done() {
+		round++
+		s.Logger.Log(NewRoundEvent{Round: round})
+		roundLogger := s.Logger.Child()
 		turnOrder := rollInitiative()
-		s.Logger.Log(InitiativeEvent{Winner: turnOrder[0]})
+		roundLogger.Log(InitiativeEvent{Winner: turnOrder[0]})
 		for i, ship := range turnOrder {
 			if ship.IsDestroyed() {
 				continue
 			}
+			roundLogger.Log(NewTurnEvent{Ship: ship})
+			turnLogger := roundLogger.Child()
+
 			target := turnOrder[(i+1)%len(turnOrder)]
 			attackDice := Add(ship.LaserDice, ship.Crew)
 			for range ship.NumLasers {
@@ -53,7 +60,7 @@ func (s *Simulation) Run() {
 					damage := target.TakeDamage(ship.LaserDamage)
 					event.Damage = &damage
 				}
-				s.Logger.Log(event)
+				turnLogger.Log(event)
 			}
 		}
 	}
