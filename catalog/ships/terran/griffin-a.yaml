@@ -1,0 +1,80 @@
+version: 1.3
+ships:
+  - name: Griffin A
+    id: griffinA
+    defenses:
+      fore:
+        barrier: 7
+        armor: 3
+      foreSides:
+        barrier: 6
+        armor: 3
+      aftSides:
+        barrier: 5
+        armor: 3
+      aft:
+        barrier: 5
+        armor: 3
+    hulls:
+      fore:
+        - regular: 2
+        - stress
+        - regular: 6
+        - crit
+      sides:
+        - regular: 4
+        - crit
+        - regular: 3
+      aft:
+        - regular: 1
+        - stress
+        - regular: 4
+        - crit
+        - regular: 2
+        - crit
+      core:
+        - regular
+        - crit
+        - regular
+        - crit
+        - regular: 4
+        - crit
+        - regular
+        - stress
+        - regular: 3
+        - crit
+        - regular
+    mounts:
+      - weaponId: laserMk1
+        points: 3
+        count: 2
+        arc:
+          start: -120
+          width: 120
+      - weaponId: laserMk2
+        points: 3
+        count: 2
+        arc:
+          start: 0
+          width: 120
+      - weaponId: particleGunMk2
+        points: 5
+        arc:
+          start: -150
+          width: 120
+      - weaponId: particleGunMk2
+        points: 5
+        arc:
+          start: 30
+          width: 120
+      - weaponId: launcher
+        points: 2
+        arc:
+          width: 360
+    glitter: 6
+    salvos:
+      - type: basic
+        count: 5
+        threatValue: 3
+      - type: rad
+        threatValue: 2

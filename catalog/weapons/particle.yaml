@@ -1,0 +1,21 @@
+weapons:
+  - name: Particle Gun Mk1
+    id: particleGunMk1
+    ranges:
+      - dice: d10
+      - start: 5
+        dice: d8
+      - start: 9
+        dice: d6
+        end: 12
+  - name: Particle Gun Mk2
+    id: particleGunMk2
+    ranges:
+      - dice: 2d6
+      - start: 5
+        dice: d10
+      - start: 9
+        dice: d8
+      - start: 13
+        dice: d6
+        end: 14

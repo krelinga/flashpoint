@@ -1,0 +1,30 @@
+weapons:
+  - name: Laser Mk 1
+    id: laserMk1
+    ranges:
+      - dice: 3d6
+      - start: 5
+        dice: 2d6
+        end: 8
+  - name: Laser Mk 2
+    id: laserMk2
+    ranges:
+      - dice: 2d6
+      - start: 5
+        dice: d10
+      - start: 9
+        dice: d8
+      - start: 13
+        dice: d6
+        end: 16
+  - name: Laser Mk 3
+    id: laserMk3
+    ranges:
+      - dice: d12
+      - dice: d10
+        start: 7
+      - dice: d8
+        start: 13
+      - dice: d6
+        start: 19
+        end: 22
