@@ -50,8 +50,8 @@ func (s *Simulation) Run() {
 			}
 			for range ship.NumLasers {
 				if result := attackDice.Roll(s.Roller); result >= target.Aspect {
-					event.Hit = true
-					target.TakeDamage(ship.LaserDamage)
+					damage := target.TakeDamage(ship.LaserDamage)
+					event.Damage = &damage
 				}
 				s.Logger.Log(event)
 			}

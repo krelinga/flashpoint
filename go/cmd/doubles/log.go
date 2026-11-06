@@ -31,13 +31,12 @@ func (e InitiativeEvent) Summary() string {
 type AttackEvent struct {
 	Attacker *Ship
 	Target   *Ship
-	Hit      bool
+	Damage   *Damage
 }
 
 func (e AttackEvent) Summary() string {
-	if e.Hit {
-		return fmt.Sprintf("%s hits %s", e.Attacker.Name, e.Target.Name)
-	} else {
-		return fmt.Sprintf("%s misses %s", e.Attacker.Name, e.Target.Name)
+	if e.Damage == nil {
+		return fmt.Sprintf("%s attacks %s and misses", e.Attacker.Name, e.Target.Name)
 	}
+	return fmt.Sprintf("%s attacks %s and hits: %s", e.Attacker.Name, e.Target.Name, *e.Damage)
 }
