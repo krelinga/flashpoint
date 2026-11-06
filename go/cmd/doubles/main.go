@@ -14,6 +14,7 @@ func main() {
 		NumLasers: 2,
 		LaserDamage: 6,
 		LaserDice: Sides(8),
+		AI: true,
 	}
 
 	janus := &Ship{

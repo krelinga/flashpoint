@@ -18,6 +18,8 @@ type Ship struct {
 	NumLasers   int
 	LaserDamage int
 	LaserDice   Dice
+
+	AI bool
 }
 
 type Damage struct {

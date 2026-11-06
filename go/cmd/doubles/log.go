@@ -47,14 +47,29 @@ func (e InitiativeEvent) Summary() string {
 type AttackEvent struct {
 	Attacker *Ship
 	Target   *Ship
-	Damage   *Damage
+	Roll     int
+	Damage   Damage
+	AI       bool
 }
 
 func (e AttackEvent) Summary() string {
-	if e.Damage == nil {
-		return fmt.Sprintf("%s attacks %s and misses", e.Attacker.Name, e.Target.Name)
+	sb := &strings.Builder{}
+	fmt.Fprintf(sb, "%s attacks %s", e.Attacker.Name, e.Target.Name)
+	if e.AI {
+		fmt.Fprint(sb, " (with AI)")
 	}
-	return fmt.Sprintf("%s attacks %s and hits: %s", e.Attacker.Name, e.Target.Name, *e.Damage)
+	fmt.Fprint(sb, " and")
+	hit := e.Roll >= e.Target.Aspect
+	if hit {
+		fmt.Fprint(sb, " hits")
+	} else {
+		fmt.Fprint(sb, " misses")
+	}
+	fmt.Fprintf(sb, " (roll: %d vs aspect: %d)", e.Roll, e.Target.Aspect)
+	if hit {
+		fmt.Fprintf(sb, " and deals damage: %s", e.Damage)
+	}
+	return sb.String()
 }
 
 type NewRoundEvent struct {

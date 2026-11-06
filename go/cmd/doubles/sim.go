@@ -50,15 +50,21 @@ func (s Simulation) Run() {
 			turnLogger := roundLogger.Child()
 
 			target := turnOrder[(i+1)%len(turnOrder)]
-			attackDice := Add(ship.LaserDice, ship.Crew)
-			for range ship.NumLasers {
+			for n := range ship.NumLasers {
+				ai := ship.AI && n == 0
 				event := AttackEvent{
 					Attacker: ship,
 					Target:   target,
+					AI : ai,
 				}
-				if result := attackDice.Roll(s.Roller); result >= target.Aspect {
-					damage := target.TakeDamage(ship.LaserDamage)
-					event.Damage = &damage
+				attackDice := Add(ship.LaserDice, ship.Crew)
+				if ai {
+					attackDice = Add(attackDice, Sides(6))
+				}
+				result := attackDice.Roll(s.Roller)
+				event.Roll = result
+				if result >= target.Aspect {
+					event.Damage = target.TakeDamage(ship.LaserDamage)
 				}
 				turnLogger.Log(event)
 			}
