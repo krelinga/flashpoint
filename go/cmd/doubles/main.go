@@ -50,7 +50,7 @@ func main() {
 		MaxRounds: 10,
 	}
 
-	const iterations = 1000
+	const iterations = 100_000
 	results := sim.RunMany(iterations)
 
 	findShip := func(ships []*Ship, name string) *Ship {
