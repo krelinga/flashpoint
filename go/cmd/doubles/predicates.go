@@ -19,6 +19,7 @@ type WidenedResults []WidenedResult
 
 func (wr WidenedResults) Compute(m Matcher) Stat {
 	s := Stat{
+		Matcher: m,
 		Denom: len(wr),
 	}
 	for _, r := range wr {
@@ -46,6 +47,7 @@ func Widen(results []Result, preds ...Predicate) WidenedResults {
 }
 
 type Stat struct {
+	Matcher Matcher
 	Num, Denom int
 }
 
@@ -60,7 +62,7 @@ func (s Stat) String() string {
 	if s.Denom == 0 {
 		return "N/A"
 	}
-	return fmt.Sprintf("%d/%d (%.2f%%)", s.Num, s.Denom, s.Percent())
+	return fmt.Sprintf("%s %d/%d (%.2f%%)", s.Matcher, s.Num, s.Denom, s.Percent())
 }
 
 type Matcher interface {

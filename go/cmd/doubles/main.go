@@ -113,6 +113,6 @@ func main() {
 		Contains(bothSurvive),
 	}
 	for _, m := range matchers {
-		fmt.Println(m, widenedResults.Compute(m))
+		fmt.Println(widenedResults.Compute(m))
 	}
 }
