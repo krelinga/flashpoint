@@ -39,11 +39,16 @@ func (sq *SalvoQueue) PopAll(arrivalRound int) []*Salvo {
 }
 
 func SalvoDamage(threat int) int {
-	// todo: populate this from the actual table.
 	switch {
 	case threat <= 1:
-		return 0
+		return 3
+	case threat <= 3:
+		return 5
+	case threat <= 6:
+		return 7
+	case threat <= 10:
+		return 10
 	default:
-		return 1
+		return 11
 	}
 }
