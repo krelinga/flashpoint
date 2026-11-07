@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Stat struct {
 	Matcher Matcher
@@ -23,4 +26,33 @@ func (s Stat) FractionString() string {
 
 func (s Stat) String() string {
 	return fmt.Sprintf("%s %s", s.Matcher, s.FractionString())
+}
+
+type StatTable []Stat
+
+func (st StatTable) String() string {
+	const (
+		matcherTitle = "Matcher"
+		statTitle = "Stat"
+	)
+	longestName := len(matcherTitle)
+	longestFraction := len(statTitle)
+	for _, s := range st {
+		if nameLen := len(s.Matcher.String()); nameLen > longestName {
+			longestName = nameLen
+		}
+		if fractionLen := len(s.FractionString()); fractionLen > longestFraction {
+			longestFraction = fractionLen
+		}
+	}
+	fmtString := fmt.Sprintf("%%-%ds | %%%ds", longestName, longestFraction)
+	sb := &strings.Builder{}
+	fmt.Fprintf(sb, fmtString, matcherTitle, statTitle)
+	fmt.Fprint(sb, "\n")
+	fmt.Fprintf(sb, fmtString, strings.Repeat("=", longestName), strings.Repeat("=", longestFraction))
+	for _, s := range st {
+		fmt.Fprint(sb, "\n")
+		fmt.Fprintf(sb, fmtString, s.Matcher.String(), s.FractionString())
+	}
+	return sb.String()
 }

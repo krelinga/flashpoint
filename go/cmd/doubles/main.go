@@ -112,7 +112,9 @@ func main() {
 		Contains(bothDestroyed),
 		Contains(bothSurvive),
 	}
-	for _, m := range matchers {
-		fmt.Println(widenedResults.Compute(m))
+	table := make(StatTable, len(matchers))
+	for i, m := range matchers {
+		table[i] = widenedResults.Compute(m)
 	}
+	fmt.Println(table)
 }
