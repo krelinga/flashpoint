@@ -29,6 +29,8 @@ func (s Simulation) RunOne() Result {
 		ships[i] = ship.Clone()
 	}
 
+	salvoQueue := &SalvoQueue{}
+
 	rounds := 0
 	done := func() bool {
 		if s.MaxRounds > 0 && rounds >= s.MaxRounds {
@@ -57,11 +59,39 @@ func (s Simulation) RunOne() Result {
 		roundLogger := logger.Child()
 		turnOrder := rollInitiative()
 		roundLogger.Log(InitiativeEvent{Winner: turnOrder[0]})
+
+		salvosThisRound := salvoQueue.PopAll(rounds)
+		for _, ship := range turnOrder {
+			if ship.IsDestroyed() {
+				continue
+			}
+			event := PDCTurnEvent{Target: ship}
+			for _, salvo := range salvosThisRound {
+				if salvo.Target == ship {
+					event.BaseThreat += salvo.ThreatValue
+				}
+			}
+			if event.BaseThreat == 0 {
+				continue
+			}
+			for range ship.NumPointDefense {
+				result := ship.PointDefense.Roll(s.Roller)
+				if result >= ship.PointDefenseThreshold {
+					event.PdcHits++
+				}
+			}
+			if adjustedThreat := event.AdjustedThreat(); adjustedThreat > 0 {
+				damage := SalvoDamage(adjustedThreat)
+				event.Damage = ship.TakeDamage(damage)
+			}
+			roundLogger.Log(event)
+		}
+
 		for i, ship := range turnOrder {
 			if ship.IsDestroyed() {
 				continue
 			}
-			roundLogger.Log(NewTurnEvent{Ship: ship})
+			roundLogger.Log(WeaponAttackTurnEvent{Ship: ship})
 			turnLogger := roundLogger.Child()
 
 			target := turnOrder[(i+1)%len(turnOrder)]
@@ -82,6 +112,27 @@ func (s Simulation) RunOne() Result {
 					event.Damage = target.TakeDamage(ship.LaserDamage)
 				}
 				turnLogger.Log(event)
+			}
+			totalSalvos := 0
+			for range ship.SalvosPerTurn {
+				if ship.SalvoAmmo == 0 {
+					continue
+				}
+				totalSalvos++
+				salvoQueue.Push(&Salvo{
+					Target:       target,
+					ThreatValue:  ship.SalvoThreat,
+					ArrivalRound: rounds + 1,
+				})
+				ship.SalvoAmmo--
+			}
+			if totalSalvos > 0 {
+				turnLogger.Log(SalvoLaunchEvent{
+					Attacker: ship,
+					Target: target,
+					SalvoThreat: ship.SalvoThreat,
+					NumSalvos: totalSalvos,
+				})
 			}
 		}
 	}

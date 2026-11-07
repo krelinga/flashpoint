@@ -9,30 +9,39 @@ func main() {
 	const janusName = "Janus"
 	const griffinName = "Griffin"
 	griffin := &Ship{
-		Name:        griffinName,
-		Crew:        Sides(8),
-		Aspect:      11,
-		Barrier:     7,
-		Armor:       3,
-		Hull:        10,
-		Core:        16,
-		NumLasers:   2,
-		LaserDamage: 6,
-		LaserDice:   Sides(8),
-		AI:          true,
+		Name:                  griffinName,
+		Crew:                  Sides(8),
+		Aspect:                11,
+		Barrier:               7,
+		Armor:                 3,
+		Hull:                  10,
+		Core:                  16,
+		NumLasers:             2,
+		LaserDamage:           6,
+		LaserDice:             Sides(8),
+		SalvosPerTurn:         1,
+		SalvoAmmo:             5,
+		SalvoThreat:           3,
+		PointDefense:          Sides(8),
+		NumPointDefense:       2,
+		PointDefenseThreshold: 6,
+		AI:                    true,
 	}
 
 	janus := &Ship{
-		Name:        janusName,
-		Crew:        Sides(8),
-		Aspect:      11,
-		Barrier:     10,
-		Armor:       3,
-		Hull:        15,
-		Core:        12,
-		NumLasers:   2,
-		LaserDamage: 8,
-		LaserDice:   Sides(10),
+		Name:                  janusName,
+		Crew:                  Sides(8),
+		Aspect:                11,
+		Barrier:               10,
+		Armor:                 3,
+		Hull:                  15,
+		Core:                  12,
+		NumLasers:             2,
+		LaserDamage:           8,
+		PointDefense:          Sides(8),
+		NumPointDefense:       3,
+		PointDefenseThreshold: 6,
+		LaserDice:             Sides(10),
 	}
 
 	sim := Simulation{
@@ -41,7 +50,7 @@ func main() {
 		MaxRounds: 10,
 	}
 
-	const iterations = 100
+	const iterations = 1000
 	results := sim.RunMany(iterations)
 
 	findShip := func(ships []*Ship, name string) *Ship {

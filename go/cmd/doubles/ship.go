@@ -19,6 +19,14 @@ type Ship struct {
 	LaserDamage int
 	LaserDice   Dice
 
+	SalvosPerTurn int
+	SalvoAmmo     int
+	SalvoThreat   int
+
+	PointDefense          Dice
+	NumPointDefense       int
+	PointDefenseThreshold int
+
 	AI bool
 }
 

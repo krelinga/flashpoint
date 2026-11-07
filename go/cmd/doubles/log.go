@@ -80,10 +80,46 @@ func (e NewRoundEvent) Summary() string {
 	return fmt.Sprintf("Round %d begins", e.Round)
 }
 
-type NewTurnEvent struct {
+type WeaponAttackTurnEvent struct {
 	Ship *Ship
 }
 
-func (e NewTurnEvent) Summary() string {
-	return fmt.Sprintf("%s's turn begins", e.Ship.Name)
+func (e WeaponAttackTurnEvent) Summary() string {
+	return fmt.Sprintf("%s's weapon attack turn begins", e.Ship.Name)
+}
+
+type PDCTurnEvent struct {
+	Target *Ship
+	BaseThreat int
+	PdcHits int
+	Damage Damage
+}
+
+func (e PDCTurnEvent) AdjustedThreat() int {
+	return max(e.BaseThreat - e.PdcHits, 0)
+}
+
+func (e PDCTurnEvent) Summary() string {
+	sb := &strings.Builder{}
+	fmt.Fprintf(sb, "%s conducts PDC: %d threat ", e.Target.Name, e.BaseThreat)
+	adjustedThreat := e.AdjustedThreat()
+	if adjustedThreat == e.BaseThreat {
+		fmt.Fprint(sb, "(PDC ineffective)")
+	} else {
+		fmt.Fprintf(sb, "(reduced to %d by %d PDC hits)", adjustedThreat, e.PdcHits)
+	}
+	if e.AdjustedThreat() > 0 {
+		fmt.Fprintf(sb, ", damage was %s", e.Damage)
+	}
+	return sb.String()
+}
+
+type SalvoLaunchEvent struct {
+	Attacker, Target *Ship
+	NumSalvos int
+	SalvoThreat int
+}
+
+func (e SalvoLaunchEvent) Summary() string {
+	return fmt.Sprintf("%s launches %d salvos of threat %d at %s", e.Attacker.Name, e.NumSalvos, e.SalvoThreat, e.Target.Name)
 }
