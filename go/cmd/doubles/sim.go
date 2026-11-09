@@ -114,6 +114,7 @@ func (s Simulation) RunOne() Result {
 					Attacker: ship,
 					Target:   target,
 					Range:    s.Range,
+					Weapon:   weapon,
 					AI:       ai,
 				}
 				attackDice := Add(laserDice, ship.Crew)

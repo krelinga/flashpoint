@@ -48,6 +48,7 @@ type AttackEvent struct {
 	Attacker *Ship
 	Target   *Ship
 	Range    int
+	Weapon   Weapon
 	Roll     int
 	Damage   Damage
 	AI       bool
@@ -59,7 +60,7 @@ func (e AttackEvent) Summary() string {
 	if e.AI {
 		fmt.Fprint(sb, " (with AI)")
 	}
-	fmt.Fprintf(sb, " at range %d and", e.Range)
+	fmt.Fprintf(sb, " at range %d with %s and", e.Range, e.Weapon.Name)
 	hit := e.Roll >= e.Target.Aspect
 	if hit {
 		fmt.Fprint(sb, " hits")
