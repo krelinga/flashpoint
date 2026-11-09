@@ -15,9 +15,7 @@ type Ship struct {
 	Hull    int
 	Core    int
 
-	NumLasers   int
-	LaserDamage int
-	LaserRanges Ranges
+	Weapons []Weapon
 
 	SalvosPerTurn int
 	SalvoAmmo     int

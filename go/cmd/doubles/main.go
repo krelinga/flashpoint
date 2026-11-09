@@ -9,20 +9,16 @@ func main() {
 	const janusName = "Janus"
 	const griffinName = "Griffin"
 	griffin := &Ship{
-		Name:        griffinName,
-		Crew:        Sides(8),
-		Aspect:      11,
-		Barrier:     7,
-		Armor:       3,
-		Hull:        10,
-		Core:        16,
-		NumLasers:   2,
-		LaserDamage: 6,
-		LaserRanges: Ranges{
-			Range{Limit: 4, Dice: Multiple(2, Sides(6))},
-			Range{Limit: 8, Dice: Sides(10)},
-			Range{Limit: 12, Dice: Sides(8)},
-			Range{Limit: 16, Dice: Sides(6)},
+		Name:    griffinName,
+		Crew:    Sides(8),
+		Aspect:  11,
+		Barrier: 7,
+		Armor:   3,
+		Hull:    10,
+		Core:    16,
+		Weapons: []Weapon{
+			WeaponLaserMk2,
+			WeaponLaserMk2,
 		},
 		SalvosPerTurn:         1,
 		SalvoAmmo:             5,
@@ -34,24 +30,20 @@ func main() {
 	}
 
 	janus := &Ship{
-		Name:                  janusName,
-		Crew:                  Sides(8),
-		Aspect:                11,
-		Barrier:               10,
-		Armor:                 3,
-		Hull:                  15,
-		Core:                  12,
-		NumLasers:             2,
-		LaserDamage:           8,
+		Name:    janusName,
+		Crew:    Sides(8),
+		Aspect:  11,
+		Barrier: 10,
+		Armor:   3,
+		Hull:    15,
+		Core:    12,
+		Weapons: []Weapon{
+			WeaponLaserMk3,
+			WeaponLaserMk3,
+		},
 		PointDefense:          Sides(8),
 		NumPointDefense:       3,
 		PointDefenseThreshold: 6,
-		LaserRanges: Ranges{
-			Range{Limit: 6, Dice: Sides(12)},
-			Range{Limit: 12, Dice: Sides(10)},
-			Range{Limit: 18, Dice: Sides(8)},
-			Range{Limit: 22, Dice: Sides(6)},
-		},
 	}
 
 	sim := Simulation{

@@ -99,27 +99,33 @@ func (s Simulation) RunOne() Result {
 			turnLogger := roundLogger.Child()
 
 			target := turnOrder[(i+1)%len(turnOrder)]
-			laserDice := ship.LaserRanges.Find(s.Range)
-			if laserDice != nil {
-				for n := range ship.NumLasers {
-					ai := ship.AI && n == 0
-					event := AttackEvent{
-						Attacker: ship,
-						Target:   target,
-						Range:    s.Range,
-						AI:       ai,
-					}
-					attackDice := Add(laserDice, ship.Crew)
-					if ai {
-						attackDice = Add(attackDice, Sides(6))
-					}
-					result := attackDice.Roll(s.Roller)
-					event.Roll = result
-					if result >= target.Aspect {
-						event.Damage = target.TakeDamage(ship.LaserDamage)
-					}
-					turnLogger.Log(event)
+			var usedAi bool
+			for _, weapon := range ship.Weapons {
+				laserDice := weapon.Ranges.Find(s.Range)
+				if laserDice == nil {
+					// out of range
+					continue
 				}
+				ai := ship.AI && !usedAi
+				if ai {
+					usedAi = true
+				}
+				event := AttackEvent{
+					Attacker: ship,
+					Target:   target,
+					Range:    s.Range,
+					AI:       ai,
+				}
+				attackDice := Add(laserDice, ship.Crew)
+				if ai {
+					attackDice = Add(attackDice, Sides(6))
+				}
+				result := attackDice.Roll(s.Roller)
+				event.Roll = result
+				if result >= target.Aspect {
+					event.Damage = target.TakeDamage(weapon.Damage)
+				}
+				turnLogger.Log(event)
 			}
 
 			totalSalvos := 0
