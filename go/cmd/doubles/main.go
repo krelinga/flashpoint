@@ -40,6 +40,7 @@ func main() {
 		Weapons: []Weapon{
 			WeaponLaserMk3,
 			WeaponLaserMk3,
+			WeaponPulseLaserMk2,
 		},
 		PointDefense:          Sides(8),
 		NumPointDefense:       3,
