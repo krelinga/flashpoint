@@ -10,8 +10,8 @@ type Result struct {
 
 func (r Result) Reroll(roller Roller) Result {
 	return Result{
-		Model: r.Model,
-		Value: r.Model.Roll(roller),
+		Model:      r.Model,
+		Value:      max(r.Value, r.Model.roll(roller)),
 		NumRerolls: r.NumRerolls + 1,
 	}
 }

@@ -38,7 +38,7 @@ func (m Model) Find(tag string) iter.Seq[Model] {
 	}
 }
 
-func (m Model) Roll(roller Roller) int {
+func (m Model) roll(roller Roller) int {
 	m.panicIfZero()
 	return roller.Roll(m.sides)
 }
@@ -47,7 +47,7 @@ func (m Model) rollAndAppend(roller Roller, results *ResultPool) {
 	m.panicIfZero()
 	*results = append(*results, Result{
 		Model: m,
-		Value: m.Roll(roller),
+		Value: m.roll(roller),
 	})
 }
 

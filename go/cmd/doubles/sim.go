@@ -1,6 +1,10 @@
 package main
 
-import "github.com/krelinga/flashpoint/go/dice"
+import (
+	"math"
+
+	"github.com/krelinga/flashpoint/go/dice"
+)
 
 type Simulation struct {
 	Ships     []*Ship
@@ -123,9 +127,11 @@ func (s Simulation) RunOne() Result {
 				if ai {
 					attackDice = dice.Add(attackDice, dice.D6())
 				}
-				result := dice.Roll(attackDice, s.Roller).Total()
-				event.Roll = result
-				if result >= target.Aspect {
+				result := dice.Roll(attackDice, s.Roller)
+				event.AnyRerolls = handlePulseLasers(result, s.Roller)
+				total := result.Total()
+				event.Roll = total
+				if total >= target.Aspect {
 					event.Damage = target.TakeDamage(weapon.Damage)
 				}
 				turnLogger.Log(event)
@@ -166,4 +172,20 @@ func (s Simulation) RunMany(n int) []Result {
 		results[i] = s.RunOne()
 	}
 	return results
+}
+
+func handlePulseLasers(results dice.ResultPool, roller dice.Roller) bool {
+	var minIdx int
+	minValue := math.MaxInt
+	for idx, result := range results.Find(PulseTag) {
+		if result.Value < minValue {
+			minValue = result.Value
+			minIdx = idx
+		}
+	}
+	if minValue == math.MaxInt {
+		return false
+	}
+	results[minIdx] = results[minIdx].Reroll(roller)
+	return true
 }

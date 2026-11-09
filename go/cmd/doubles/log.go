@@ -45,20 +45,37 @@ func (e InitiativeEvent) Summary() string {
 }
 
 type AttackEvent struct {
-	Attacker *Ship
-	Target   *Ship
-	Range    int
-	Weapon   Weapon
-	Roll     int
-	Damage   Damage
-	AI       bool
+	Attacker   *Ship
+	Target     *Ship
+	Range      int
+	Weapon     Weapon
+	Roll       int
+	AnyRerolls bool
+	Damage     Damage
+	AI         bool
 }
 
 func (e AttackEvent) Summary() string {
 	sb := &strings.Builder{}
 	fmt.Fprintf(sb, "%s attacks %s", e.Attacker.Name, e.Target.Name)
-	if e.AI {
-		fmt.Fprint(sb, " (with AI)")
+	modifiers := e.AI || e.AnyRerolls
+	if modifiers {
+		sb.WriteString(" (")
+		var needSep bool
+		writeModifier := func(modifier string) {
+			if needSep {
+				sb.WriteString(", ")
+			}
+			sb.WriteString(modifier)
+			needSep = true
+		}
+		if e.AI {
+			writeModifier("with AI")
+		}
+		if e.AnyRerolls {
+			writeModifier("with rerolls")
+		}
+		sb.WriteString(")")
 	}
 	fmt.Fprintf(sb, " at range %d with %s and", e.Range, e.Weapon.Name)
 	hit := e.Roll >= e.Target.Aspect
