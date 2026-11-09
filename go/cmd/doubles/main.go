@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand/v2"
+
+	"github.com/krelinga/flashpoint/go/dice"
 )
 
 func main() {
@@ -10,7 +12,7 @@ func main() {
 	const griffinName = "Griffin"
 	griffin := &Ship{
 		Name:    griffinName,
-		Crew:    Sides(8),
+		Crew:    dice.D8(),
 		Aspect:  11,
 		Barrier: 7,
 		Armor:   3,
@@ -23,7 +25,7 @@ func main() {
 		SalvosPerTurn:         1,
 		SalvoAmmo:             5,
 		SalvoThreat:           3,
-		PointDefense:          Sides(8),
+		PointDefense:          dice.D8(),
 		NumPointDefense:       2,
 		PointDefenseThreshold: 6,
 		AI:                    true,
@@ -31,7 +33,7 @@ func main() {
 
 	janus := &Ship{
 		Name:    janusName,
-		Crew:    Sides(8),
+		Crew:    dice.D8(),
 		Aspect:  11,
 		Barrier: 10,
 		Armor:   3,
@@ -42,7 +44,7 @@ func main() {
 			WeaponLaserMk3,
 			WeaponPulseLaserMk2,
 		},
-		PointDefense:          Sides(8),
+		PointDefense:          dice.D8(),
 		NumPointDefense:       3,
 		PointDefenseThreshold: 6,
 	}
@@ -50,7 +52,7 @@ func main() {
 	sim := Simulation{
 		Ships:     []*Ship{griffin, janus},
 		Range:     10,
-		Roller:    &RandomRoller{Rand: rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))},
+		Roller:    dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
 		MaxRounds: 10,
 	}
 

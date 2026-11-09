@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/krelinga/flashpoint/go/dice"
 )
 
 type Ship struct {
 	Name string
-	Crew Dice
+	Crew dice.ModelPool
 
 	Aspect  int
 	Barrier int
@@ -21,7 +23,7 @@ type Ship struct {
 	SalvoAmmo     int
 	SalvoThreat   int
 
-	PointDefense          Dice
+	PointDefense          dice.ModelPool
 	NumPointDefense       int
 	PointDefenseThreshold int
 

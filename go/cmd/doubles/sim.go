@@ -1,9 +1,11 @@
 package main
 
+import "github.com/krelinga/flashpoint/go/dice"
+
 type Simulation struct {
 	Ships     []*Ship
 	Range     int
-	Roller    Roller
+	Roller    dice.Roller
 	Logger    Logger
 	MaxRounds int
 }
@@ -47,7 +49,7 @@ func (s Simulation) RunOne() Result {
 		results := make([]int, len(ships))
 		for results[0] == results[1] {
 			for i, ship := range ships {
-				results[i] = ship.Crew.Roll(s.Roller)
+				results[i] = dice.Roll(ship.Crew, s.Roller).Total()
 			}
 		}
 		if results[0] > results[1] {
@@ -79,7 +81,7 @@ func (s Simulation) RunOne() Result {
 				continue
 			}
 			for range ship.NumPointDefense {
-				result := ship.PointDefense.Roll(s.Roller)
+				result := dice.Roll(ship.PointDefense, s.Roller).Total()
 				if result >= ship.PointDefenseThreshold {
 					event.PdcHits++
 				}
@@ -117,11 +119,11 @@ func (s Simulation) RunOne() Result {
 					Weapon:   weapon,
 					AI:       ai,
 				}
-				attackDice := Add(laserDice, ship.Crew)
+				attackDice := dice.Add(laserDice, ship.Crew)
 				if ai {
-					attackDice = Add(attackDice, Sides(6))
+					attackDice = dice.Add(attackDice, dice.D6())
 				}
-				result := attackDice.Roll(s.Roller)
+				result := dice.Roll(attackDice, s.Roller).Total()
 				event.Roll = result
 				if result >= target.Aspect {
 					event.Damage = target.TakeDamage(weapon.Damage)
