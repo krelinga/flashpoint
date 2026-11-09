@@ -47,6 +47,7 @@ func (e InitiativeEvent) Summary() string {
 type AttackEvent struct {
 	Attacker *Ship
 	Target   *Ship
+	Range    int
 	Roll     int
 	Damage   Damage
 	AI       bool
@@ -58,7 +59,7 @@ func (e AttackEvent) Summary() string {
 	if e.AI {
 		fmt.Fprint(sb, " (with AI)")
 	}
-	fmt.Fprint(sb, " and")
+	fmt.Fprintf(sb, " at range %d and", e.Range)
 	hit := e.Roll >= e.Target.Aspect
 	if hit {
 		fmt.Fprint(sb, " hits")
@@ -89,14 +90,14 @@ func (e WeaponAttackTurnEvent) Summary() string {
 }
 
 type PDCTurnEvent struct {
-	Target *Ship
+	Target     *Ship
 	BaseThreat int
-	PdcHits int
-	Damage Damage
+	PdcHits    int
+	Damage     Damage
 }
 
 func (e PDCTurnEvent) AdjustedThreat() int {
-	return max(e.BaseThreat - e.PdcHits, 0)
+	return max(e.BaseThreat-e.PdcHits, 0)
 }
 
 func (e PDCTurnEvent) Summary() string {
@@ -116,8 +117,8 @@ func (e PDCTurnEvent) Summary() string {
 
 type SalvoLaunchEvent struct {
 	Attacker, Target *Ship
-	NumSalvos int
-	SalvoThreat int
+	NumSalvos        int
+	SalvoThreat      int
 }
 
 func (e SalvoLaunchEvent) Summary() string {

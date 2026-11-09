@@ -9,16 +9,21 @@ func main() {
 	const janusName = "Janus"
 	const griffinName = "Griffin"
 	griffin := &Ship{
-		Name:                  griffinName,
-		Crew:                  Sides(8),
-		Aspect:                11,
-		Barrier:               7,
-		Armor:                 3,
-		Hull:                  10,
-		Core:                  16,
-		NumLasers:             2,
-		LaserDamage:           6,
-		LaserDice:             Sides(8),
+		Name:        griffinName,
+		Crew:        Sides(8),
+		Aspect:      11,
+		Barrier:     7,
+		Armor:       3,
+		Hull:        10,
+		Core:        16,
+		NumLasers:   2,
+		LaserDamage: 6,
+		LaserRanges: Ranges{
+			Range{Limit: 4, Dice: Multiple(2, Sides(6))},
+			Range{Limit: 8, Dice: Sides(10)},
+			Range{Limit: 12, Dice: Sides(8)},
+			Range{Limit: 16, Dice: Sides(6)},
+		},
 		SalvosPerTurn:         1,
 		SalvoAmmo:             5,
 		SalvoThreat:           3,
@@ -41,11 +46,17 @@ func main() {
 		PointDefense:          Sides(8),
 		NumPointDefense:       3,
 		PointDefenseThreshold: 6,
-		LaserDice:             Sides(10),
+		LaserRanges: Ranges{
+			Range{Limit: 6, Dice: Sides(12)},
+			Range{Limit: 12, Dice: Sides(10)},
+			Range{Limit: 18, Dice: Sides(8)},
+			Range{Limit: 22, Dice: Sides(6)},
+		},
 	}
 
 	sim := Simulation{
 		Ships:     []*Ship{griffin, janus},
+		Range:     10,
 		Roller:    &RandomRoller{Rand: rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))},
 		MaxRounds: 10,
 	}

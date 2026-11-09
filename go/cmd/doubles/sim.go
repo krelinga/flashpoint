@@ -2,6 +2,7 @@ package main
 
 type Simulation struct {
 	Ships     []*Ship
+	Range     int
 	Roller    Roller
 	Logger    Logger
 	MaxRounds int
@@ -18,6 +19,9 @@ func (s Simulation) RunOne() Result {
 	}
 	if s.Roller == nil {
 		panic("Simulation requires a Roller")
+	}
+	if s.Range <= 0 {
+		panic("Simulation requires a positive range")
 	}
 
 	var logger Logger = NullLogger{}
@@ -95,24 +99,29 @@ func (s Simulation) RunOne() Result {
 			turnLogger := roundLogger.Child()
 
 			target := turnOrder[(i+1)%len(turnOrder)]
-			for n := range ship.NumLasers {
-				ai := ship.AI && n == 0
-				event := AttackEvent{
-					Attacker: ship,
-					Target:   target,
-					AI:       ai,
+			laserDice := ship.LaserRanges.Find(s.Range)
+			if laserDice != nil {
+				for n := range ship.NumLasers {
+					ai := ship.AI && n == 0
+					event := AttackEvent{
+						Attacker: ship,
+						Target:   target,
+						Range:    s.Range,
+						AI:       ai,
+					}
+					attackDice := Add(laserDice, ship.Crew)
+					if ai {
+						attackDice = Add(attackDice, Sides(6))
+					}
+					result := attackDice.Roll(s.Roller)
+					event.Roll = result
+					if result >= target.Aspect {
+						event.Damage = target.TakeDamage(ship.LaserDamage)
+					}
+					turnLogger.Log(event)
 				}
-				attackDice := Add(ship.LaserDice, ship.Crew)
-				if ai {
-					attackDice = Add(attackDice, Sides(6))
-				}
-				result := attackDice.Roll(s.Roller)
-				event.Roll = result
-				if result >= target.Aspect {
-					event.Damage = target.TakeDamage(ship.LaserDamage)
-				}
-				turnLogger.Log(event)
 			}
+
 			totalSalvos := 0
 			for range ship.SalvosPerTurn {
 				if ship.SalvoAmmo == 0 {
@@ -128,10 +137,10 @@ func (s Simulation) RunOne() Result {
 			}
 			if totalSalvos > 0 {
 				turnLogger.Log(SalvoLaunchEvent{
-					Attacker: ship,
-					Target: target,
+					Attacker:    ship,
+					Target:      target,
 					SalvoThreat: ship.SalvoThreat,
-					NumSalvos: totalSalvos,
+					NumSalvos:   totalSalvos,
 				})
 			}
 		}

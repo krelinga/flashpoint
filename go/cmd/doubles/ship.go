@@ -17,7 +17,7 @@ type Ship struct {
 
 	NumLasers   int
 	LaserDamage int
-	LaserDice   Dice
+	LaserRanges Ranges
 
 	SalvosPerTurn int
 	SalvoAmmo     int
