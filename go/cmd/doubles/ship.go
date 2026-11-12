@@ -17,7 +17,7 @@ type Ship struct {
 	Hull    int
 	Core    int
 
-	Weapons []Weapon
+	Weapons []*Weapon
 
 	SalvosPerTurn int
 	SalvoAmmo     int

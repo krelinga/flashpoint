@@ -11,7 +11,7 @@ type Weapon struct {
 const PulseTag string = "pulse"
 
 var (
-	WeaponLaserMk2 = Weapon{
+	WeaponLaserMk2 = &Weapon{
 		Name:   "Laser Mk 2",
 		Damage: 6,
 		Ranges: Ranges{
@@ -21,7 +21,7 @@ var (
 			Range{Limit: 16, Dice: dice.D6()},
 		},
 	}
-	WeaponLaserMk3 = Weapon{
+	WeaponLaserMk3 = &Weapon{
 		Name:   "Laser Mk 3",
 		Damage: 8,
 		Ranges: Ranges{
@@ -32,7 +32,7 @@ var (
 		},
 	}
 	// TODO: support rerolling pulse laser dice.
-	WeaponPulseLaserMk2 = Weapon{
+	WeaponPulseLaserMk2 = &Weapon{
 		Name: "Pulse Laser Mk 2",
 		Damage: 4,
 		Ranges: Ranges{

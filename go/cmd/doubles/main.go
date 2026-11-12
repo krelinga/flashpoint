@@ -18,7 +18,7 @@ func main() {
 		Armor:   3,
 		Hull:    10,
 		Core:    16,
-		Weapons: []Weapon{
+		Weapons: []*Weapon{
 			WeaponLaserMk2,
 			WeaponLaserMk2,
 		},
@@ -39,7 +39,7 @@ func main() {
 		Armor:   3,
 		Hull:    15,
 		Core:    12,
-		Weapons: []Weapon{
+		Weapons: []*Weapon{
 			WeaponLaserMk3,
 			WeaponLaserMk3,
 			WeaponPulseLaserMk2,

@@ -48,7 +48,7 @@ type AttackEvent struct {
 	Attacker   *Ship
 	Target     *Ship
 	Range      int
-	Weapon     Weapon
+	Weapon     *Weapon
 	Roll       int
 	AnyRerolls bool
 	Damage     Damage
