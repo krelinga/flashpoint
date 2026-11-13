@@ -55,18 +55,25 @@ func main() {
 
 	sim := Simulation{
 		Ships: []*Ship{griffin, janus},
-		Distance: ClosingDistance{
-			Start:       25,
-			ClosingRate: 10,
-			Min:         4,
-		},
 		Roller:        dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
 		MaxRounds:     10,
-		VolleyPlanner: PairingVolleyPlanner{},
 	}
 
 	const iterations = 100_000
-	results := sim.RunMany(iterations, nil)
+	results := sim.RunMany(iterations, Params{
+		"Distance": []Param{
+			ConstantDistance(10),
+			ClosingDistance{
+				Start: 25,
+				ClosingRate: 10,
+				Min: 4,
+			},
+		},
+		"VolleyPlanner": []Param{
+			BasicVolleyPlanner{},
+			PairingVolleyPlanner{},
+		},
+	})
 
 	findShip := func(ships []*Ship, name string) *Ship {
 		for _, s := range ships {
