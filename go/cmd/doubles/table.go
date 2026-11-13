@@ -66,8 +66,16 @@ func (t Table) String() string {
 		if row != 0 {
 			sb.WriteString("\n")
 		}
+		if row == 1 {
+			sb.WriteString(strings.Repeat(" ", widths[0] + 3))
+			for column := 1; column <= t.Columns(); column++ {
+				sb.WriteString(strings.Repeat("-", widths[column]))
+				sb.WriteString("   ")
+			}
+			sb.WriteString("\n")
+		}
 		for column := range t.Columns() + 1 {
-			if column == 1 {
+			if column == 1 && row != 0 {
 				sb.WriteString(" | ")
 			} else if column != 0 {
 				sb.WriteString("   ")
