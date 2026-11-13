@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"cmp"
 	"encoding/json"
 	"fmt"
 	"iter"
-	"maps"
 	"slices"
 	"strings"
 )
@@ -20,6 +18,17 @@ type AggregateKey struct {
 	Params     []KeyValue
 }
 
+func (ak AggregateKey) Equals(other AggregateKey) bool {
+	propertiesEqual := slices.Equal(ak.Properties, other.Properties)
+	paramsEqual := slices.Equal(ak.Params, other.Params)
+	return propertiesEqual && paramsEqual
+}
+
+type aggregateCount struct {
+	key   AggregateKey
+	count int
+}
+
 func (ak AggregateKey) String() string {
 	var keyString string
 	if keyBytes, err := json.Marshal(ak); err != nil {
@@ -30,25 +39,15 @@ func (ak AggregateKey) String() string {
 	return keyString
 }
 
-func ParseAggregateKeyString(keyString string) AggregateKey {
-	buffer := bytes.NewBufferString(keyString)
-	keyBytes := buffer.Bytes()
-	var key AggregateKey
-	if err := json.Unmarshal(keyBytes, &key); err != nil {
-		panic(err)
-	}
-	return key
-}
-
 type Aggregator struct {
 	Properties map[string]func(Result) string
-	counts     map[string]int
+	counts     []*aggregateCount
 }
 
 func (a *Aggregator) Total() int {
 	var total int
 	for _, count := range a.counts {
-		total += count
+		total += count.count
 	}
 	return total
 }
@@ -77,15 +76,24 @@ func (a *Aggregator) Add(result Result) {
 	slices.SortFunc(key.Params, keyValueCompare)
 
 	if a.counts == nil {
-		a.counts = make(map[string]int)
+		a.counts = []*aggregateCount{}
 	}
-	a.counts[key.String()]++
+	for _, count := range a.counts {
+		if count.key.Equals(key) {
+			count.count++
+			return
+		}
+	}
+	a.counts = append(a.counts, &aggregateCount{
+		key:   key,
+		count: 1,
+	})
 }
 
 func (a *Aggregator) All() iter.Seq2[AggregateKey, int] {
 	return func(yield func(AggregateKey, int) bool) {
-		for stringKey, count := range a.counts {
-			if !yield(ParseAggregateKeyString(stringKey), count) {
+		for _, count := range a.counts {
+			if !yield(count.key, count.count) {
 				return
 			}
 		}
@@ -94,8 +102,8 @@ func (a *Aggregator) All() iter.Seq2[AggregateKey, int] {
 
 func (a *Aggregator) Keys() iter.Seq[AggregateKey] {
 	return func(yield func(AggregateKey) bool) {
-		for stringKey := range a.counts {
-			if !yield(ParseAggregateKeyString(stringKey)) {
+		for _, count := range a.counts {
+			if !yield(count.key) {
 				return
 			}
 		}
@@ -107,17 +115,40 @@ func (a *Aggregator) String() string {
 		return "nil"
 	}
 
+	compareKeys := func(a, b AggregateKey) int {
+		compareKeyValues := func(a, b []KeyValue) int {
+			if result := cmp.Compare(len(a), len(b)); result != 0 {
+				return result
+			}
+			for i := range a {
+				a := a[i]
+				b := b[i]
+				if result := cmp.Compare(a.Key, b.Key); result != 0 {
+					return result
+				}
+				if result := cmp.Compare(a.Value, b.Value); result != 0 {
+					return result
+				}
+			}
+			return 0
+		}
+		if result := compareKeyValues(a.Params, b.Params); result != 0 {
+			return result
+		}
+		return compareKeyValues(a.Properties, b.Properties)
+	}
+
 	total := a.Total()
 	sb := &strings.Builder{}
 	sb.WriteString("{\n")
-	keyStrings := make([]string, 0, len(a.counts))
-	keyStrings = slices.AppendSeq(keyStrings, maps.Keys(a.counts))
-	slices.Sort(keyStrings)
-	for _, keyString := range keyStrings {
-		count := a.counts[keyString]
-		fraction := float64(count) / float64(total)
+	entries := slices.Clone(a.counts)
+	slices.SortFunc(entries, func(a, b *aggregateCount) int {
+		return compareKeys(a.key, b.key)
+	})
+	for _, entry := range entries {
+		fraction := float64(entry.count) / float64(total)
 		percent := fraction * 100
-		fmt.Fprintf(sb, "    %s: %d of %d (%f%%)\n", keyString, count, total, percent)
+		fmt.Fprintf(sb, "    %s: %d of %d (%f%%)\n", entry.key.String(), entry.count, total, percent)
 	}
 	sb.WriteString("}")
 
