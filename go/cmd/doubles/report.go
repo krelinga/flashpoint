@@ -121,8 +121,13 @@ func (r Report) ToTable() Table {
 		table.SetColumnName(i, column)
 	}
 	for row := range r.Rows() {
+		rowTotal := r.RowTotal(row)
 		for column := range r.Columns() {
-			table.Set(row, column, fmt.Sprintf("%d", r.Get(row, column)))
+			columnTotal := r.ColumnTotal(column)
+			entry := r.Get(row, column)
+			rowPercent := float64(entry) * 100 / float64(rowTotal)
+			columnPercent := float64(entry) * 100 / float64(columnTotal)
+			table.Set(row, column, fmt.Sprintf("%d (%.02f%% of row, %.02f%% of column)", entry, rowPercent, columnPercent))
 		}
 	}
 	return table
