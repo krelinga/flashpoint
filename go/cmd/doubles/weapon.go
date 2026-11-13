@@ -31,9 +31,8 @@ var (
 			Range{Limit: 22, Dice: dice.D6()},
 		},
 	}
-	// TODO: support rerolling pulse laser dice.
 	WeaponPulseLaserMk2 = &Weapon{
-		Name: "Pulse Laser Mk 2",
+		Name:   "Pulse Laser Mk 2",
 		Damage: 4,
 		Ranges: Ranges{
 			Range{Limit: 4, Dice: dice.D12(PulseTag)},

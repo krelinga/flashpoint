@@ -48,17 +48,17 @@ type AttackEvent struct {
 	Attacker   *Ship
 	Target     *Ship
 	Range      int
-	Weapon     *Weapon
+	Volley     Volley
 	Roll       int
 	AnyRerolls bool
 	Damage     Damage
-	AI         bool
 }
 
 func (e AttackEvent) Summary() string {
 	sb := &strings.Builder{}
 	fmt.Fprintf(sb, "%s attacks %s", e.Attacker.Name, e.Target.Name)
-	modifiers := e.AI || e.AnyRerolls
+	multiWeaponVolley := len(e.Volley.WeaponIdxs) > 1
+	modifiers := e.Volley.UseAI || e.AnyRerolls || multiWeaponVolley
 	if modifiers {
 		sb.WriteString(" (")
 		var needSep bool
@@ -69,15 +69,19 @@ func (e AttackEvent) Summary() string {
 			sb.WriteString(modifier)
 			needSep = true
 		}
-		if e.AI {
+		if e.Volley.UseAI {
 			writeModifier("with AI")
 		}
 		if e.AnyRerolls {
 			writeModifier("with rerolls")
 		}
+		if multiWeaponVolley {
+			writeModifier(fmt.Sprintf("with volley of %d weapons", len(e.Volley.WeaponIdxs)))
+		}
 		sb.WriteString(")")
 	}
-	fmt.Fprintf(sb, " at range %d with %s and", e.Range, e.Weapon.Name)
+	weapon := e.Volley.getWeapon(e.Attacker)
+	fmt.Fprintf(sb, " at range %d with %s and", e.Range, weapon.Name)
 	hit := e.Roll >= e.Target.Aspect
 	if hit {
 		fmt.Fprint(sb, " hits")

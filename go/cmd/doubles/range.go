@@ -29,3 +29,7 @@ func (r Ranges) Find(wantRange int) dice.ModelPool {
 
 	return nil
 }
+
+func (r Ranges) IsInRange(wantRange int) bool {
+	return r.Find(wantRange) != nil
+}

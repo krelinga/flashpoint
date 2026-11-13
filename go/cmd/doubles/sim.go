@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/krelinga/flashpoint/go/dice"
@@ -12,6 +13,7 @@ type Simulation struct {
 	Roller    dice.Roller
 	Logger    Logger
 	MaxRounds int
+	VolleyPlanner VolleyPlanner
 }
 
 type Result struct {
@@ -33,6 +35,10 @@ func (s Simulation) RunOne() Result {
 	var logger Logger = NullLogger{}
 	if s.Logger != nil {
 		logger = s.Logger
+	}
+	var volleyPlanner VolleyPlanner = BasicVolleyPlanner{}
+	if s.VolleyPlanner != nil {
+		volleyPlanner = s.VolleyPlanner
 	}
 	ships := make([]*Ship, 2)
 	for i, ship := range s.Ships {
@@ -105,36 +111,10 @@ func (s Simulation) RunOne() Result {
 			turnLogger := roundLogger.Child()
 
 			target := turnOrder[(i+1)%len(turnOrder)]
-			var usedAi bool
-			for _, weapon := range ship.Weapons {
-				laserDice := weapon.Ranges.Find(s.Range)
-				if laserDice == nil {
-					// out of range
-					continue
-				}
-				ai := ship.AI && !usedAi
-				if ai {
-					usedAi = true
-				}
-				event := AttackEvent{
-					Attacker: ship,
-					Target:   target,
-					Range:    s.Range,
-					Weapon:   weapon,
-					AI:       ai,
-				}
-				attackDice := dice.Add(laserDice, ship.Crew)
-				if ai {
-					attackDice = dice.Add(attackDice, dice.D6())
-				}
-				result := dice.Roll(attackDice, s.Roller)
-				event.AnyRerolls = handlePulseLasers(result, s.Roller)
-				total := result.Total()
-				event.Roll = total
-				if total >= target.Aspect {
-					event.Damage = target.TakeDamage(weapon.Damage)
-				}
-				turnLogger.Log(event)
+			volleys := volleyPlanner.PlanVolleys(ship, target, s.Range)
+			volleys.panicIfInvalidAiUsage(ship.AI)
+			for _, volley := range volleys {
+				s.fireVolley(ship, target, volley, turnLogger)
 			}
 
 			totalSalvos := 0
@@ -164,6 +144,33 @@ func (s Simulation) RunOne() Result {
 		Ships:  ships,
 		Rounds: rounds,
 	}
+}
+
+func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, logger Logger) {
+	event := AttackEvent{
+		Attacker: attacker,
+		Target: target,
+		Range: s.Range,
+		Volley: volley,
+	}
+	weapon := volley.getWeapon(attacker)
+	weaponkDice := weapon.Ranges.Find(s.Range)
+	if weaponkDice == nil {
+		panic(fmt.Sprintf("weapon %s out of range %d", weapon.Name, s.Range))
+	}
+	attackDice := dice.Add(weaponkDice, attacker.Crew)
+	if volley.UseAI {
+		attackDice = dice.Add(attackDice, dice.D6())
+	}
+	results := dice.Roll(attackDice, s.Roller)
+	event.AnyRerolls = handlePulseLasers(results, s.Roller)
+	total := results.Total()
+	event.Roll = total
+	if total >= target.Aspect {
+		totalDamage := weapon.Damage * len(volley.WeaponIdxs)
+		event.Damage = target.TakeDamage(totalDamage)
+	}
+	logger.Log(event)
 }
 
 func (s Simulation) RunMany(n int) []Result {
