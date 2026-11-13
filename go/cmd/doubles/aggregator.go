@@ -18,6 +18,30 @@ type AggregateKey struct {
 	Params     []KeyValue
 }
 
+func (ak AggregateKey) HasProperty(key string) bool {
+	return slices.ContainsFunc(ak.Properties, func(kv KeyValue) bool {
+		return kv.Key == key
+	})
+}
+
+func (ak AggregateKey) HasPropertyValue(key, value string) bool {
+	return slices.ContainsFunc(ak.Properties, func(kv KeyValue) bool {
+		return kv.Key == key && kv.Value == value
+	})
+}
+
+func (ak AggregateKey) HasParam(key string) bool {
+	return slices.ContainsFunc(ak.Params, func(kv KeyValue) bool {
+		return kv.Key == key
+	})
+}
+
+func (ak AggregateKey) HasParamValue(key, value string) bool {
+	return slices.ContainsFunc(ak.Params, func(kv KeyValue) bool {
+		return kv.Key == key && kv.Value == value
+	})
+}
+
 func (ak AggregateKey) Equals(other AggregateKey) bool {
 	propertiesEqual := slices.Equal(ak.Properties, other.Properties)
 	paramsEqual := slices.Equal(ak.Params, other.Params)

@@ -133,6 +133,7 @@ func (r Report) ToTable(title string) Table {
 	return table
 }
 
+// TODO: add NewReportFilter().
 func NewReport(a *Aggregator, rows, columns ReportDimension) Report {
 	if rows == nil {
 		panic("rows must not be nil")
