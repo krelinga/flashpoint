@@ -22,6 +22,11 @@ func (v Volley) getWeapon(ship *Ship) *Weapon {
 	return weapon
 }
 
+func (v Volley) Damage(ship *Ship) int {
+	weapon := v.getWeapon(ship)
+	return weapon.Damage * len(v.WeaponIdxs)
+}
+
 type Volleys []Volley
 
 func (v Volleys) panicIfInvalidAiUsage(shipHasAi bool) {
@@ -39,7 +44,7 @@ type VolleyPlanner interface {
 	PlanVolleys(ship, target *Ship, theRange int) Volleys
 }
 
-type BasicVolleyPlanner struct {}
+type BasicVolleyPlanner struct{}
 
 func (_ BasicVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Volleys {
 	volleys := make(Volleys, 0, len(ship.Weapons))
@@ -50,10 +55,72 @@ func (_ BasicVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Volley
 		}
 		volley := Volley{
 			WeaponIdxs: []int{weaponIdx},
-			UseAI: aiAvail,
+			UseAI:      aiAvail,
 		}
 		aiAvail = false
 		volleys = append(volleys, volley)
 	}
+	return volleys
+}
+
+type PairingVolleyPlanner struct{}
+
+func (_ PairingVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Volleys {
+	volleys := Volleys{}
+	weaponToIdx := map[*Weapon][]int{}
+	for weaponIdx, weapon := range ship.Weapons {
+		if !weapon.CanPair {
+			volleys = append(volleys, Volley{
+				WeaponIdxs: []int{weaponIdx},
+			})
+			continue
+		}
+		weaponToIdx[weapon] = append(weaponToIdx[weapon], weaponIdx)
+	}
+
+	for _, idxSlice := range weaponToIdx {
+		var pair []int
+		newPair := func() {
+			pair = make([]int, 0, 2)
+		}
+		tryWritePair := func() {
+			if len(pair) == 0 {
+				return
+			}
+			volleys = append(volleys, Volley{
+				WeaponIdxs: pair,
+			})
+		}
+		for i, weaponIdx := range idxSlice {
+			if i%2 == 0 {
+				tryWritePair()
+				newPair()
+			}
+			pair = append(pair, weaponIdx)
+		}
+		tryWritePair()
+	}
+	if ship.AI {
+		// Always put the AI on whatever volley can do the most damage.
+		setUseAi := func(idx int, value bool) {
+			volleys[idx].UseAI = value
+		}
+		getDamage := func(volleyIdx int) int {
+			return volleys[volleyIdx].Damage(ship)
+		}
+		maxDamageIdx := 0
+		setUseAi(0, true)
+
+		for i := 1; i < len(volleys); i++ {
+			volleyDamage := getDamage(i)
+			maxDamage := getDamage(maxDamageIdx)
+			if volleyDamage > maxDamage {
+				setUseAi(maxDamageIdx, false)
+				setUseAi(i, true)
+				maxDamageIdx = i
+			}
+		}
+	}
+
 	return volleys
 }

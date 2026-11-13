@@ -21,6 +21,8 @@ func main() {
 		Weapons: []*Weapon{
 			WeaponLaserMk2,
 			WeaponLaserMk2,
+			WeaponLaserMk2,
+			WeaponLaserMk2,
 		},
 		SalvosPerTurn:         1,
 		SalvoAmmo:             5,
@@ -42,6 +44,8 @@ func main() {
 		Weapons: []*Weapon{
 			WeaponLaserMk3,
 			WeaponLaserMk3,
+			WeaponLaserMk3,
+			WeaponLaserMk3,
 			WeaponPulseLaserMk2,
 		},
 		PointDefense:          dice.D8(),
@@ -54,6 +58,7 @@ func main() {
 		Range:     10,
 		Roller:    dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
 		MaxRounds: 10,
+		VolleyPlanner: PairingVolleyPlanner{},
 	}
 
 	const iterations = 100_000

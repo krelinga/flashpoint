@@ -167,8 +167,7 @@ func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, logger Log
 	total := results.Total()
 	event.Roll = total
 	if total >= target.Aspect {
-		totalDamage := weapon.Damage * len(volley.WeaponIdxs)
-		event.Damage = target.TakeDamage(totalDamage)
+		event.Damage = target.TakeDamage(volley.Damage(attacker))
 	}
 	logger.Log(event)
 }
