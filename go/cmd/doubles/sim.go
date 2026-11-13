@@ -20,8 +20,9 @@ type Simulation struct {
 }
 
 type Result struct {
-	Ships  []*Ship
-	Rounds int
+	Ships       []*Ship
+	Rounds      int
+	ParamValues map[string]string
 }
 
 func (s Simulation) RunOne() Result {
@@ -176,16 +177,14 @@ func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, theRange i
 	logger.Log(event)
 }
 
-func (s Simulation) RunMany(n int, params Params) []Result {
+func (s Simulation) RunMany(n int, sink func(Result), params Params) {
 	if params == nil {
-		results := make([]Result, n)
-		for i := range n {
-			results[i] = s.RunOne()
+		for range n {
+			sink(s.RunOne())
 		}
-		return results
+		return
 	}
-	
-	results := make([]Result, 0, n*params.NumVariations())
+
 	params = maps.Clone(params)
 	for key, values := range params {
 		values = slices.Clone(values)
@@ -217,20 +216,22 @@ func (s Simulation) RunMany(n int, params Params) []Result {
 		}
 		return false
 	}
-	
+
 	for next() {
+		paramValues := map[string]string{}
 		for i, position := range positions {
 			key := keys[i]
 			param := params[key][position]
 			param.Apply(&s)
+			paramValues[key] = param.String()
 		}
 
 		for range n {
-			results = append(results, s.RunOne())
+			result := s.RunOne()
+			result.ParamValues = paramValues
+			sink(result)
 		}
 	}
-
-	return results
 }
 
 func handlePulseLasers(results dice.ResultPool, roller dice.Roller) bool {

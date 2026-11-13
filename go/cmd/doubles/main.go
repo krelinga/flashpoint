@@ -59,8 +59,38 @@ func main() {
 		MaxRounds:     10,
 	}
 
+	a := &Aggregator{
+		Properties: map[string]func(Result) string{
+			"Outcome": func(r Result) string {
+				findShip := func(name string) *Ship {
+					for _, ship := range r.Ships {
+						if ship.Name == name {
+							return ship
+						}
+					}
+					panic(fmt.Sprintf("ship %s not found", name))
+				}
+				janus := findShip(janusName)
+				griffin := findShip(griffinName)
+				janusDestroyed := janus.IsDestroyed()
+				griffinDestroyed := griffin.IsDestroyed()
+
+				switch {
+				case janusDestroyed && !griffinDestroyed:
+					return "Griffin Wins"
+				case !janusDestroyed && griffinDestroyed:
+					return "Janus Wins"
+				case janusDestroyed && griffinDestroyed:
+					return "Both Destroyed"
+				default:
+					return "Both Survived"
+				}
+			},
+		},
+	}
+
 	const iterations = 100_000
-	results := sim.RunMany(iterations, Params{
+	sim.RunMany(iterations, a.Add, Params{
 		"Distance": []Param{
 			ConstantDistance(10),
 			ClosingDistance{
@@ -75,68 +105,5 @@ func main() {
 		},
 	})
 
-	findShip := func(ships []*Ship, name string) *Ship {
-		for _, s := range ships {
-			if s.Name == name {
-				return s
-			}
-		}
-		panic(fmt.Sprintf("No ship named %s", name))
-	}
-
-	const janusWins = "Janus Wins"
-	const griffinWins = "Griffin Wins"
-	const bothDestroyed = "Both Destroyed"
-	const bothSurvive = "Both Survive"
-	widenedResults := Widen(results,
-		Predicate{
-			Name: janusWins,
-			Test: func(r Result) bool {
-				janus := findShip(r.Ships, janusName)
-				griffin := findShip(r.Ships, griffinName)
-				return !janus.IsDestroyed() && griffin.IsDestroyed()
-			},
-		},
-		Predicate{
-			Name: griffinWins,
-			Test: func(r Result) bool {
-				janus := findShip(r.Ships, janusName)
-				griffin := findShip(r.Ships, griffinName)
-				return !griffin.IsDestroyed() && janus.IsDestroyed()
-			},
-		},
-		Predicate{
-			Name: bothDestroyed,
-			Test: func(r Result) bool {
-				for _, ship := range r.Ships {
-					if !ship.IsDestroyed() {
-						return false
-					}
-				}
-				return true
-			},
-		},
-		Predicate{
-			Name: bothSurvive,
-			Test: func(r Result) bool {
-				for _, ship := range r.Ships {
-					if ship.IsDestroyed() {
-						return false
-					}
-				}
-				return true
-			},
-		},
-	)
-	matchers := []Matcher{
-		Contains(janusWins),
-		Contains(griffinWins),
-		Contains(bothDestroyed),
-		Contains(bothSurvive),
-	}
-	table := make(StatTable, len(matchers))
-	for i, m := range matchers {
-		table[i] = widenedResults.Compute(m)
-	}
-	fmt.Println(table)
+	fmt.Println(a)
 }
