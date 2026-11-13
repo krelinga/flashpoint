@@ -35,4 +35,13 @@ func main() {
 	}
 	fmt.Println()
 	fmt.Println(tables.PrettyString(table, options))
+
+	rowHeaders := table.Slice(tables.All(), tables.Count(1))
+	fmt.Println(tables.PrettyString(rowHeaders, options))
+
+	colHeaders := table.Slice(tables.Count(1), tables.All())
+	fmt.Println(tables.PrettyString(colHeaders, options))
+
+	body := table.Slice(tables.Start(1), tables.Start(1))
+	fmt.Println(tables.PrettyString(body, options))
 }

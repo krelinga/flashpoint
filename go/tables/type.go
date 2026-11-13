@@ -8,6 +8,7 @@ import (
 type Table[T any] struct {
 	entries []T
 	rows, columns int
+	lPad, rPad, tPad int
 }
 
 func New[T any](rows, columns int) Table[T] {
@@ -43,7 +44,8 @@ func (t Table[T]) offset(row, column int) int {
 	if column < 0 || column >= t.columns {
 		panic("column out of range")
 	}
-	return t.columns * row + column
+	rowWidth := t.lPad + t.rPad + t.columns
+	return rowWidth * (row + t.tPad) + t.lPad + column
 }
 
 func (t Table[T]) Get(row, column int) T {
