@@ -86,6 +86,21 @@ func (t Table) String() string {
 			fmt.Fprintf(sb, formatString, t.entries[t.offset(row, column)])
 		}
 	}
+	unboxed := sb.String()
+	var maxLineLength int
+	for line := range strings.SplitSeq(unboxed, "\n") {
+		maxLineLength = max(maxLineLength, len(line))
+	}
+	sb = &strings.Builder{}
+	boxTop := func() {
+		fmt.Fprintf(sb, " %s \n", strings.Repeat("-", maxLineLength + 2))
+	}
+	boxTop()
+	formatString := fmt.Sprintf("| %%-%ds |\n", maxLineLength)
+	for line := range strings.SplitSeq(unboxed, "\n") {
+		fmt.Fprintf(sb, formatString, line)
+	}
+	boxTop()
 	return sb.String()
 }
 
