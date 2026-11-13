@@ -112,8 +112,8 @@ func (r Report) ColumnTotal(column int) int {
 	return total
 }
 
-func (r Report) ToTable() Table {
-	table := NewTable(r.Rows(), r.Columns())
+func (r Report) ToTable(title string) Table {
+	table := NewTable(title, r.Rows(), r.Columns())
 	for i, row := range r.rows {
 		table.SetRowName(i, row)
 	}

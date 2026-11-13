@@ -106,5 +106,5 @@ func main() {
 	})
 
 	report := NewReport(a, ReportProperty("Outcome"), ReportParam("Distance"))
-	fmt.Println(report.ToTable())
+	fmt.Println(report.ToTable("Outcomes By Distance with Basic and Pairing volleys"))
 }

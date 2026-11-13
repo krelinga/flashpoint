@@ -6,6 +6,7 @@ import (
 )
 
 type Table struct {
+	title         string
 	entries       []string
 	rows, columns int
 }
@@ -25,7 +26,7 @@ func (t Table) offset(row, column int) int {
 	if column < 0 || column > t.Columns() {
 		panic("column out of range")
 	}
-	return row * (t.Columns() + 1) + column
+	return row*(t.Columns()+1) + column
 }
 
 func (t Table) Set(row, column int, value string) {
@@ -62,12 +63,13 @@ func (t Table) String() string {
 	}
 
 	sb := &strings.Builder{}
+	fmt.Fprintf(sb, "%s\n%s\n\n", t.title, strings.Repeat("=", len(t.title)))
 	for row := range t.Rows() + 1 {
 		if row != 0 {
 			sb.WriteString("\n")
 		}
 		if row == 1 {
-			sb.WriteString(strings.Repeat(" ", widths[0] + 3))
+			sb.WriteString(strings.Repeat(" ", widths[0]+3))
 			for column := 1; column <= t.Columns(); column++ {
 				sb.WriteString(strings.Repeat("-", widths[column]))
 				sb.WriteString("   ")
@@ -87,8 +89,9 @@ func (t Table) String() string {
 	return sb.String()
 }
 
-func NewTable(rows, columns int) Table {
+func NewTable(title string, rows, columns int) Table {
 	return Table{
+		title: title,
 		rows:    rows,
 		columns: columns,
 		entries: make([]string, (rows+1)*(columns+1)),
