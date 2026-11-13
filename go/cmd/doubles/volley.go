@@ -69,6 +69,9 @@ func (_ PairingVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Voll
 	volleys := Volleys{}
 	weaponToIdx := map[*Weapon][]int{}
 	for weaponIdx, weapon := range ship.Weapons {
+		if !weapon.Ranges.IsInRange(theRange) {
+			continue
+		}
 		if !weapon.CanPair {
 			volleys = append(volleys, Volley{
 				WeaponIdxs: []int{weaponIdx},
@@ -76,6 +79,10 @@ func (_ PairingVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Voll
 			continue
 		}
 		weaponToIdx[weapon] = append(weaponToIdx[weapon], weaponIdx)
+	}
+	if len(volleys) == 0 && len(weaponToIdx) == 0 {
+		// everything is out of range.
+		return nil
 	}
 
 	for _, idxSlice := range weaponToIdx {

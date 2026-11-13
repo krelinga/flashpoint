@@ -55,7 +55,11 @@ func main() {
 
 	sim := Simulation{
 		Ships:         []*Ship{griffin, janus},
-		Distance:      ConstantDistance(10),
+		Distance:      &ClosingDistance{
+			Start: 25,
+			ClosingRate: 10,
+			Min: 4,
+		},
 		Roller:        dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
 		MaxRounds:     10,
 		VolleyPlanner: PairingVolleyPlanner{},
