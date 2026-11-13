@@ -8,11 +8,11 @@ import (
 )
 
 type Simulation struct {
-	Ships     []*Ship
-	Range     int
-	Roller    dice.Roller
-	Logger    Logger
-	MaxRounds int
+	Ships         []*Ship
+	Distance      Distance
+	Roller        dice.Roller
+	Logger        Logger
+	MaxRounds     int
 	VolleyPlanner VolleyPlanner
 }
 
@@ -28,8 +28,8 @@ func (s Simulation) RunOne() Result {
 	if s.Roller == nil {
 		panic("Simulation requires a Roller")
 	}
-	if s.Range <= 0 {
-		panic("Simulation requires a positive range")
+	if s.Distance == nil {
+		panic("Simulation requires a non-nil distance")
 	}
 
 	var logger Logger = NullLogger{}
@@ -102,6 +102,7 @@ func (s Simulation) RunOne() Result {
 			}
 			roundLogger.Log(event)
 		}
+		theRange := s.Distance.GetDistance(rounds)
 
 		for i, ship := range turnOrder {
 			if ship.IsDestroyed() {
@@ -111,10 +112,10 @@ func (s Simulation) RunOne() Result {
 			turnLogger := roundLogger.Child()
 
 			target := turnOrder[(i+1)%len(turnOrder)]
-			volleys := volleyPlanner.PlanVolleys(ship, target, s.Range)
+			volleys := volleyPlanner.PlanVolleys(ship, target, theRange)
 			volleys.panicIfInvalidAiUsage(ship.AI)
 			for _, volley := range volleys {
-				s.fireVolley(ship, target, volley, turnLogger)
+				s.fireVolley(ship, target, volley, theRange, turnLogger)
 			}
 
 			totalSalvos := 0
@@ -146,17 +147,17 @@ func (s Simulation) RunOne() Result {
 	}
 }
 
-func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, logger Logger) {
+func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, theRange int, logger Logger) {
 	event := AttackEvent{
 		Attacker: attacker,
-		Target: target,
-		Range: s.Range,
-		Volley: volley,
+		Target:   target,
+		Range:    theRange,
+		Volley:   volley,
 	}
 	weapon := volley.getWeapon(attacker)
-	weaponkDice := weapon.Ranges.Find(s.Range)
+	weaponkDice := weapon.Ranges.Find(theRange)
 	if weaponkDice == nil {
-		panic(fmt.Sprintf("weapon %s out of range %d", weapon.Name, s.Range))
+		panic(fmt.Sprintf("weapon %s out of range %d", weapon.Name, theRange))
 	}
 	attackDice := dice.Add(weaponkDice, attacker.Crew)
 	if volley.UseAI {
