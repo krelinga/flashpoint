@@ -11,6 +11,7 @@ type PrettyOptions[T any] struct {
 	Box                     bool
 	HeaderRow, HeaderColumn bool
 	StringFunc              func(T) string
+	UTF8                    bool
 }
 
 func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions[T]) (n int, err error) {
@@ -64,14 +65,32 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 	newLine := func() {
 		write("\n")
 	}
-	boxHorizontalLine := func() {
+	boxTop := func() {
 		if options.Box {
-			writeF(" %s", strings.Repeat("-", numChars))
+			if !options.UTF8 {
+				writeF(" %s\n", strings.Repeat("-", numChars))
+				return
+			}
+
+			writeF("┌%s┐\n", strings.Repeat("─", numChars))
+		}
+	}
+	boxBottom := func() {
+		if options.Box {
+			if !options.UTF8 {
+				writeF("\n %s", strings.Repeat("-", numChars))
+				return
+			}
+			writeF("└%s┘\n", strings.Repeat("─", numChars))
 		}
 	}
 	boxVerticalLine := func() {
 		if options.Box {
-			write("|")
+			if !options.UTF8 {
+				write("|")
+			} else {
+				write("│")
+			}
 		}
 	}
 	colDivider := func() {
@@ -84,10 +103,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 		write(strings.Repeat("-", columnChars[column]))
 	}
 
-	boxHorizontalLine()
-	if options.Box {
-		newLine()
-	}
+	boxTop()
 	if options.Title != "" {
 		boxVerticalLine()
 		format := fmt.Sprintf("%%-%ds", numChars)
@@ -136,7 +152,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 	if options.Box {
 		newLine()
 	}
-	boxHorizontalLine()
+	boxBottom()
 
 	return
 }

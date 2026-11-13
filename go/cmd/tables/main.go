@@ -31,6 +31,7 @@ func main() {
 		Box: true,
 		HeaderRow: true,
 		HeaderColumn: true,
+		UTF8: true,
 	}
 	if _, err := tables.PrettyWriter(os.Stdout, table, options); err != nil {
 		panic(err)
