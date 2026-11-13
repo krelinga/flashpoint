@@ -67,6 +67,9 @@ func (t Table) String() string {
 			sb.WriteString("\n")
 		}
 		for column := range t.Columns() + 1 {
+			if column != 0 {
+				sb.WriteString(" ")
+			}
 			formatString := fmt.Sprintf("%%-%ds", widths[column])
 			fmt.Fprintf(sb, formatString, t.entries[t.offset(row, column)])
 		}
