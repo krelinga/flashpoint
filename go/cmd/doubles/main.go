@@ -54,9 +54,9 @@ func main() {
 	}
 
 	sim := Simulation{
-		Ships: []*Ship{griffin, janus},
-		Roller:        dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
-		MaxRounds:     10,
+		Ships:     []*Ship{griffin, janus},
+		Roller:    dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
+		MaxRounds: 10,
 	}
 
 	a := &Aggregator{
@@ -94,9 +94,9 @@ func main() {
 		"Distance": []Param{
 			ConstantDistance(10),
 			ClosingDistance{
-				Start: 25,
+				Start:       25,
 				ClosingRate: 10,
-				Min: 4,
+				Min:         4,
 			},
 		},
 		"VolleyPlanner": []Param{
@@ -105,5 +105,6 @@ func main() {
 		},
 	})
 
-	fmt.Println(a)
+	report := NewReport(a, ReportProperty("Outcome"), ReportParam("Distance"))
+	fmt.Println(report.ToTable())
 }
