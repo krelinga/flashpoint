@@ -29,12 +29,17 @@ func main() {
 	options := tables.PrettyOptions[string] {
 		Title: "table title",
 		Box: true,
+		HeaderRow: true,
+		HeaderColumn: true,
 	}
 	if _, err := tables.PrettyWriter(os.Stdout, table, options); err != nil {
 		panic(err)
 	}
 	fmt.Println()
 	fmt.Println(tables.PrettyString(table, options))
+	options.Title = ""
+	options.HeaderColumn = false
+	options.HeaderRow = false
 
 	rowHeaders := table.Slice(tables.All(), tables.Count(1))
 	fmt.Println(tables.PrettyString(rowHeaders, options))

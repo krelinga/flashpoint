@@ -7,9 +7,10 @@ import (
 )
 
 type PrettyOptions[T any] struct {
-	Title      string
-	Box        bool
-	StringFunc func(T) string
+	Title                   string
+	Box                     bool
+	HeaderRow, HeaderColumn bool
+	StringFunc              func(T) string
 }
 
 func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions[T]) (n int, err error) {
@@ -110,7 +111,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 			newLine()
 		}
 		boxVerticalLine()
-		if row == 1 {
+		if row == 1 && options.HeaderRow {
 			for column := range table.Columns() {
 				if column > 0 {
 					colSpace()
@@ -122,7 +123,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 			boxVerticalLine()
 		}
 		for column := range table.Columns() {
-			if column == 1 {
+			if column == 1 && options.HeaderColumn {
 				colDivider()
 			} else if column != 0 {
 				colSpace()
