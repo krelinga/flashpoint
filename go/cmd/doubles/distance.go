@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Distance interface {
 	// Round == 1 on the first round.
 	GetDistance(round int) int
@@ -15,6 +17,14 @@ func (cd ConstantDistance) GetDistance(_ int) int {
 	return distance
 }
 
+func (cd ConstantDistance) String() string {
+	return fmt.Sprintf("ConstantDisstance(%d)", int(cd))
+}
+
+func (cd ConstantDistance) Apply(sim *Simulation) {
+	sim.Distance = cd
+}
+
 type ClosingDistance struct {
 	// The distance that the two ships start at on the first turn.
 	// Must be positive.
@@ -28,14 +38,25 @@ type ClosingDistance struct {
 	Min int
 }
 
-func (cd *ClosingDistance) GetDistance(round int) int {
+func (cd ClosingDistance) min() int {
+	return max(1, cd.Min)
+}
+
+func (cd ClosingDistance) GetDistance(round int) int {
 	if cd.Start <= 0 {
 		panic("Start must be positive")
 	}
 	if cd.Min < 0 {
 		panic("Min must be non-negative")
 	}
-	theMin := max(cd.Min, 1)
 
-	return max(theMin, cd.Start-cd.ClosingRate*(round-1))
+	return max(cd.min(), cd.Start-cd.ClosingRate*(round-1))
+}
+
+func (cd ClosingDistance) String() string {
+	return fmt.Sprintf("ClosingDistance{Start: %d, ClosingRate: %d, Min: %d}", cd.Start, cd.ClosingRate, cd.min())
+}
+
+func (cd ClosingDistance) Apply(sim *Simulation) {
+	sim.Distance = cd
 }

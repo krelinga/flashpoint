@@ -63,6 +63,14 @@ func (_ BasicVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Volley
 	return volleys
 }
 
+func (_ BasicVolleyPlanner) String() string {
+	return "BasicVolleyPlanner"
+}
+
+func (_ BasicVolleyPlanner) Apply(sim *Simulation) {
+	sim.VolleyPlanner = BasicVolleyPlanner{}
+}
+
 type PairingVolleyPlanner struct{}
 
 func (_ PairingVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Volleys {
@@ -130,4 +138,12 @@ func (_ PairingVolleyPlanner) PlanVolleys(ship, target *Ship, theRange int) Voll
 	}
 
 	return volleys
+}
+
+func (_ PairingVolleyPlanner) String() string {
+	return "PairingVolleyPlanner"
+}
+
+func (_ PairingVolleyPlanner) Apply(sim *Simulation) {
+	sim.VolleyPlanner = PairingVolleyPlanner{}
 }

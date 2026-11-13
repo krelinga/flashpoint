@@ -1,8 +1,11 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
+	"maps"
 	"math"
+	"slices"
 
 	"github.com/krelinga/flashpoint/go/dice"
 )
@@ -173,11 +176,60 @@ func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, theRange i
 	logger.Log(event)
 }
 
-func (s Simulation) RunMany(n int) []Result {
-	results := make([]Result, n)
-	for i := range n {
-		results[i] = s.RunOne()
+func (s Simulation) RunMany(n int, params Params) []Result {
+	if params == nil {
+		results := make([]Result, n)
+		for i := range n {
+			results[i] = s.RunOne()
+		}
+		return results
 	}
+	
+	results := make([]Result, 0, n*params.NumVariations())
+	params = maps.Clone(params)
+	for key, values := range params {
+		values = slices.Clone(values)
+		slices.SortFunc(values, func(a, b Param) int {
+			return cmp.Compare(a.String(), b.String())
+		})
+		params[key] = values
+	}
+	keys := make([]string, 0, len(params))
+	keys = slices.AppendSeq(keys, maps.Keys(params))
+	slices.Sort(keys)
+
+	limits := make([]int, len(keys))
+	for i := range limits {
+		limits[i] = len(params[keys[i]])
+	}
+	var positions []int
+	next := func() bool {
+		if positions == nil {
+			positions = make([]int, len(keys))
+			return true
+		}
+		for i := len(positions) - 1; i >= 0; i-- {
+			positions[i]++
+			if positions[i] < limits[i] {
+				return true
+			}
+			positions[i] = 0
+		}
+		return false
+	}
+	
+	for next() {
+		for i, position := range positions {
+			key := keys[i]
+			param := params[key][position]
+			param.Apply(&s)
+		}
+
+		for range n {
+			results = append(results, s.RunOne())
+		}
+	}
+
 	return results
 }
 

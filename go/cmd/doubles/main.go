@@ -54,11 +54,11 @@ func main() {
 	}
 
 	sim := Simulation{
-		Ships:         []*Ship{griffin, janus},
-		Distance:      &ClosingDistance{
-			Start: 25,
+		Ships: []*Ship{griffin, janus},
+		Distance: ClosingDistance{
+			Start:       25,
 			ClosingRate: 10,
-			Min: 4,
+			Min:         4,
 		},
 		Roller:        dice.Random(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))),
 		MaxRounds:     10,
@@ -66,7 +66,7 @@ func main() {
 	}
 
 	const iterations = 100_000
-	results := sim.RunMany(iterations)
+	results := sim.RunMany(iterations, nil)
 
 	findShip := func(ships []*Ship, name string) *Ship {
 		for _, s := range ships {
