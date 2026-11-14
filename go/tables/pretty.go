@@ -138,8 +138,13 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 
 	for row := range table.Rows() {
 		if row == 1 && options.HeaderRow {
-			divider := strings.Repeat(charSet.headerUnderline, dataWidth)
-			printLn(divider)
+			left := strings.Repeat(charSet.headerUnderline, columnChars[0] + cellPadding)
+			pivot := charSet.headerUnderline
+			if options.HeaderColumn {
+				pivot = charSet.headerIntersection
+			}
+			right := strings.Repeat(charSet.headerUnderline, dataWidth - utf8.RuneCountInString(left) - utf8.RuneCountInString(pivot))
+			printLn(left, pivot, right)
 		}
 
 		cells := make([]any, 0, table.Columns()*5)
@@ -147,7 +152,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 			if column != 0 {
 				padding := strings.Repeat(" ", cellPadding)
 				sep := charSet.cellSep
-				if column == 1 {
+				if column == 1 && options.HeaderColumn {
 					sep = charSet.headerSep
 				}
 				cells = append(cells, padding, sep, padding)
