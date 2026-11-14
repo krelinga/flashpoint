@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/krelinga/flashpoint/go/dice"
+	"github.com/krelinga/flashpoint/go/tables"
 )
 
 func main() {
@@ -106,5 +107,12 @@ func main() {
 	})
 
 	report := NewReport(a, ReportProperty("Outcome"), ReportParam("Distance"))
-	fmt.Println(report.ToTable("Outcomes By Distance with Basic and Pairing volleys"))
+	reportTable := report.ToTable()
+	fmt.Println(tables.PrettyString[string](reportTable, tables.PrettyOptions[string]{
+		Title: "Outcomes By Distance with Basic and Pairing volleys",
+		UTF8: true,
+		Box: true,
+		HeaderRow: true,
+		HeaderColumn: true,
+	}))
 }

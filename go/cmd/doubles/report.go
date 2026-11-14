@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+
+	"github.com/krelinga/flashpoint/go/tables"
 )
 
 type ReportDimension interface {
@@ -112,14 +114,15 @@ func (r Report) ColumnTotal(column int) int {
 	return total
 }
 
-func (r Report) ToTable(title string) Table {
-	table := NewTable(title, r.Rows(), r.Columns())
+func (r Report) ToTable() tables.Table[string] {
+	table := tables.New[string](r.Rows() + 1, r.Columns() + 1)
 	for i, row := range r.rows {
-		table.SetRowName(i, row)
+		table.Set(i + 1, 0, row)
 	}
 	for i, column := range r.columns {
-		table.SetColumnName(i, column)
+		table.Set(0, i + 1, column)
 	}
+	dataTable := table.Slice(tables.Start(1), tables.Start(1))
 	for row := range r.Rows() {
 		rowTotal := r.RowTotal(row)
 		for column := range r.Columns() {
@@ -127,7 +130,7 @@ func (r Report) ToTable(title string) Table {
 			entry := r.Get(row, column)
 			rowPercent := float64(entry) * 100 / float64(rowTotal)
 			columnPercent := float64(entry) * 100 / float64(columnTotal)
-			table.Set(row, column, fmt.Sprintf("%d (%.02f%% of row, %.02f%% of column)", entry, rowPercent, columnPercent))
+			dataTable.Set(row, column, fmt.Sprintf("%d (%.02f%% of row, %.02f%% of column)", entry, rowPercent, columnPercent))
 		}
 	}
 	return table
