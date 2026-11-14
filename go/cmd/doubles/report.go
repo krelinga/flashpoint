@@ -64,54 +64,31 @@ func (r ReportProperty) match(key AggregateKey, value string) bool {
 }
 
 type Report struct {
-	entries       []int
+	tables.Table[int]
 	rows, columns []string
 }
 
-func (r Report) Rows() int {
-	return len(r.rows)
-}
-
-func (r Report) Columns() int {
-	return len(r.columns)
-}
-
-func (r Report) Get(row, column int) int {
-	return r.entries[r.offset(row, column)]
-}
-
-func (r Report) offset(row, column int) int {
-	if row < 0 || row >= r.Rows() {
-		panic("row out of range")
-	}
-	if column < 0 || column >= r.Columns() {
-		panic("column out of range")
-	}
-	return row*r.Columns() + column
-}
 
 func (r Report) Total() int {
 	total := 0
-	for _, entry := range r.entries {
-		total += entry
+	for row := range r.Rows() {
+		for column := range r.Columns() {
+			total += r.Get(row, column)
+		}
 	}
 	return total
 }
 
 func (r Report) RowTotal(row int) int {
-	total := 0
-	for column := range r.Columns() {
-		total += r.Get(row, column)
-	}
-	return total
+	return r.ReduceRow(row, 0, func(initial, next int) int {
+		return initial + next
+	})
 }
 
 func (r Report) ColumnTotal(column int) int {
-	total := 0
-	for row := range r.Rows() {
-		total += r.Get(row, column)
-	}
-	return total
+	return r.ReduceColumn(column, 0, func(initial, next int) int {
+		return initial + next
+	})
 }
 
 func (r Report) ToTable() tables.Table[string] {
@@ -148,7 +125,7 @@ func NewReport(a *Aggregator, rows, columns ReportDimension) Report {
 	rowValues := rows.findValues(a)
 	columnValues := columns.findValues(a)
 	report := Report{
-		entries: make([]int, len(rowValues)*len(columnValues)),
+		Table: tables.New[int](len(rowValues), len(columnValues)),
 		rows:    rowValues,
 		columns: columnValues,
 	}
@@ -160,7 +137,7 @@ func NewReport(a *Aggregator, rows, columns ReportDimension) Report {
 					entry += count
 				}
 			}
-			report.entries[report.offset(row, column)] = entry
+			report.Set(row, column, entry)
 		}
 	}
 
