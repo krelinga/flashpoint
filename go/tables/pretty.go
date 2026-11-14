@@ -15,6 +15,7 @@ type PrettyOptions[T any] struct {
 	UTF8                    bool
 }
 
+// TODO: handle multi-line strings output from options.StringFunc() ?
 func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions[T]) (n int, err error) {
 	if options.StringFunc == nil {
 		options.StringFunc = func(raw T) string {
