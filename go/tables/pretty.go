@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode/utf8"
 )
 
 type PrettyOptions[T any] struct {
@@ -31,7 +32,143 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 		})
 		columnChars[column] = longest
 	}
-	const horizontalDivider = " | "
+
+	type charSetType struct {
+		boxSide, boxTop                                    string
+		boxCornerTL, boxCornerTR, boxCornerBL, boxCornerBR string
+		titleUnderline                                     string
+		headerUnderline, headerSep, headerIntersection     string
+		cellSep                                            string
+		boxPadding                                         string
+	}
+
+	var charSet charSetType
+	if options.UTF8 {
+		charSet.boxSide = "│"
+		charSet.boxTop = "─"
+		charSet.boxCornerTL = "┌"
+		charSet.boxCornerTR = "┐"
+		charSet.boxCornerBL = "└"
+		charSet.boxCornerBR = "┘"
+		charSet.titleUnderline = "═"
+		charSet.headerUnderline = "─"
+		charSet.headerSep = "│"
+		charSet.headerIntersection = "┼"
+		charSet.cellSep = " "
+		charSet.boxPadding = " "
+	} else {
+		charSet.boxSide = "|"
+		charSet.boxTop = "-"
+		charSet.boxCornerTL = "+"
+		charSet.boxCornerTR = "+"
+		charSet.boxCornerBL = "+"
+		charSet.boxCornerBR = "+"
+		charSet.titleUnderline = "="
+		charSet.headerUnderline = "-"
+		charSet.headerSep = "|"
+		charSet.headerIntersection = "+"
+		charSet.cellSep = " "
+		charSet.boxPadding = " "
+	}
+	const cellPadding = 1
+	const boxPadding = 1
+
+	dataWidth := func() int {
+		total := 0
+		for column := range table.Columns() {
+			var sep string
+			if column == 1 {
+				sep = charSet.headerSep
+			} else {
+				sep = charSet.cellSep
+			}
+			if column != 0 {
+				total += cellPadding*2 + utf8.RuneCountInString(sep)
+			}
+			total += columnChars[column]
+		}
+		return max(total, len(options.Title))
+	}()
+
+	print := func(args ...any) (newChars int) {
+		for _, arg := range args {
+			if err != nil {
+				return
+			}
+			var newN int
+			newString := fmt.Sprint(arg)
+			newChars += utf8.RuneCountInString(newString)
+			newN, err = io.WriteString(writer, newString)
+			n += newN
+		}
+		return
+	}
+
+	printLn := func(args ...any) {
+		if options.Box {
+			print(charSet.boxSide)
+			print(strings.Repeat(charSet.boxPadding, boxPadding))
+		}
+
+		newChars := print(args...)
+
+		if options.Box {
+			print(strings.Repeat(" ", dataWidth-newChars))
+			print(strings.Repeat(charSet.boxPadding, boxPadding))
+			print(charSet.boxSide)
+		}
+
+		print("\n")
+	}
+
+	if options.Box {
+		// Top line
+		print(
+			charSet.boxCornerTL,
+			strings.Repeat(charSet.boxTop, dataWidth+2*boxPadding),
+			charSet.boxCornerTR,
+			"\n",
+		)
+	}
+
+	if options.Title != "" {
+		printLn(options.Title)
+		printLn(strings.Repeat(charSet.titleUnderline, utf8.RuneCountInString(options.Title)))
+	}
+
+	for row := range table.Rows() {
+		if row == 1 && options.HeaderRow {
+			divider := strings.Repeat(charSet.headerUnderline, dataWidth)
+			printLn(divider)
+		}
+
+		cells := make([]any, 0, table.Columns()*5)
+		for column := range table.Columns() {
+			if column != 0 {
+				padding := strings.Repeat(" ", cellPadding)
+				sep := charSet.cellSep
+				if column == 1 {
+					sep = charSet.headerSep
+				}
+				cells = append(cells, padding, sep, padding)
+			}
+			cellString := options.StringFunc(table.Get(row, column))
+			neededPadding := columnChars[column] - utf8.RuneCountInString(cellString)
+			cells = append(cells, cellString, strings.Repeat(" ", neededPadding))
+		}
+		printLn(cells...)
+	}
+
+	if options.Box {
+		// Bottom line
+		print(
+			charSet.boxCornerBL,
+			strings.Repeat(charSet.boxTop, dataWidth+2*boxPadding),
+			charSet.boxCornerBR,
+		)
+	}
+
+	/*const horizontalDivider = " | "
 	const horizontalSpace = "   "
 	numChars := func() int {
 		tableCols := 0
@@ -152,7 +289,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 	if options.Box {
 		newLine()
 	}
-	boxBottom()
+	boxBottom()*/
 
 	return
 }
