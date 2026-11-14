@@ -52,8 +52,8 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 		charSet.boxCornerBR = "┘"
 		charSet.titleUnderline = "═"
 		charSet.headerUnderline = "─"
-		charSet.headerSep = "│"
-		charSet.headerIntersection = "┼"
+		charSet.headerSep = " │ "
+		charSet.headerIntersection = "─┼─"
 		charSet.cellSep = " "
 		charSet.boxPadding = " "
 	} else {
@@ -65,25 +65,22 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 		charSet.boxCornerBR = "+"
 		charSet.titleUnderline = "="
 		charSet.headerUnderline = "-"
-		charSet.headerSep = "|"
-		charSet.headerIntersection = "+"
+		charSet.headerSep = " | "
+		charSet.headerIntersection = "-+-"
 		charSet.cellSep = " "
 		charSet.boxPadding = " "
 	}
-	const cellPadding = 1
 	const boxPadding = 1
 
 	dataWidth := func() int {
 		total := 0
 		for column := range table.Columns() {
-			var sep string
-			if column == 1 {
+			sep := charSet.cellSep
+			if column == 1 && options.HeaderColumn {
 				sep = charSet.headerSep
-			} else {
-				sep = charSet.cellSep
 			}
 			if column != 0 {
-				total += cellPadding*2 + utf8.RuneCountInString(sep)
+				total += utf8.RuneCountInString(sep)
 			}
 			total += columnChars[column]
 		}
@@ -138,7 +135,7 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 
 	for row := range table.Rows() {
 		if row == 1 && options.HeaderRow {
-			left := strings.Repeat(charSet.headerUnderline, columnChars[0]+cellPadding)
+			left := strings.Repeat(charSet.headerUnderline, columnChars[0])
 			pivot := charSet.headerUnderline
 			if options.HeaderColumn {
 				pivot = charSet.headerIntersection
@@ -147,15 +144,14 @@ func PrettyWriter[T any](writer io.Writer, table Table[T], options PrettyOptions
 			printLn(left, pivot, right)
 		}
 
-		cells := make([]any, 0, table.Columns()*5)
+		cells := make([]any, 0, table.Columns()*3)
 		for column := range table.Columns() {
 			if column != 0 {
-				padding := strings.Repeat(" ", cellPadding)
 				sep := charSet.cellSep
 				if column == 1 && options.HeaderColumn {
 					sep = charSet.headerSep
 				}
-				cells = append(cells, padding, sep, padding)
+				cells = append(cells, sep)
 			}
 			cellString := options.StringFunc(table.Get(row, column))
 			neededPadding := columnChars[column] - utf8.RuneCountInString(cellString)
