@@ -108,7 +108,7 @@ func main() {
 
 	report := NewReport(a, ReportProperty("Outcome"), ReportParam("Distance"))
 	reportTable := report.ToTable()
-	fmt.Println(tables.PrettyString[string](reportTable, tables.PrettyOptions[string]{
+	fmt.Println(tables.PrettyString(reportTable, tables.PrettyOptions[string]{
 		Title: "Outcomes By Distance with Basic and Pairing volleys",
 		UTF8: true,
 		Box: true,
