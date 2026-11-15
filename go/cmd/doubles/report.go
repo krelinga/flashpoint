@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"iter"
 	"maps"
 	"slices"
 
@@ -9,11 +10,24 @@ import (
 )
 
 type ReportDimension interface {
+	readValues(AggregateKey) iter.Seq[string]
 	findValues(*Aggregator) []string
 	match(aggregateKey AggregateKey, value string) bool
 }
 
 type ReportParam string
+
+func (r ReportParam) readValues(key AggregateKey) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for _, paramValue := range key.Params {
+			if paramValue.Key == string(r) {
+				if !yield(paramValue.Value) {
+					return
+				}
+			}
+		}
+	}
+}
 
 func (r ReportParam) findValues(a *Aggregator) []string {
 	found := map[string]struct{}{}
@@ -39,6 +53,18 @@ func (r ReportParam) match(key AggregateKey, value string) bool {
 }
 
 type ReportProperty string
+
+func (r ReportProperty) readValues(key AggregateKey) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for _, propertyValue := range key.Properties {
+			if propertyValue.Key == string(r) {
+				if !yield(propertyValue.Value) {
+					return
+				}
+			}
+		}
+	}
+}
 
 func (r ReportProperty) findValues(a *Aggregator) []string {
 	found := map[string]struct{}{}
@@ -68,7 +94,6 @@ type Report struct {
 	rows, columns []string
 }
 
-
 func (r Report) Total() int {
 	total := 0
 	for row := range r.Rows() {
@@ -92,12 +117,12 @@ func (r Report) ColumnTotal(column int) int {
 }
 
 func (r Report) ToTable() tables.Table[string] {
-	table := tables.New[string](r.Rows() + 1, r.Columns() + 1)
+	table := tables.New[string](r.Rows()+1, r.Columns()+1)
 	for i, row := range r.rows {
-		table.Set(i + 1, 0, row)
+		table.Set(i+1, 0, row)
 	}
 	for i, column := range r.columns {
-		table.Set(0, i + 1, column)
+		table.Set(0, i+1, column)
 	}
 	dataTable := table.Slice(tables.Start(1), tables.Start(1))
 	for row := range r.Rows() {
@@ -113,19 +138,37 @@ func (r Report) ToTable() tables.Table[string] {
 	return table
 }
 
-// TODO: add NewReportFilter().
-func NewReport(a *Aggregator, rows, columns ReportDimension) Report {
+type ReportFilter func(AggregateKey) bool
+
+func NewReport(a *Aggregator, rows, columns ReportDimension, filter ReportFilter) Report {
 	if rows == nil {
 		panic("rows must not be nil")
 	}
 	if columns == nil {
 		panic("columns must not be nil")
 	}
+	if filter == nil {
+		filter = func(_ AggregateKey) bool { return true }
+	}
 
-	rowValues := rows.findValues(a)
-	columnValues := columns.findValues(a)
+	findValues := func(rd ReportDimension) []string {
+		found := map[string]struct{}{}
+		for key := range a.Keys() {
+			if !filter(key) {
+				continue
+			}
+			for value := range rd.readValues(key) {
+				found[value] = struct{}{}
+			}
+		}
+		values := slices.Collect(maps.Keys(found))
+		slices.Sort(values)
+		return values
+	}
+	rowValues := findValues(rows)
+	columnValues := findValues(columns)
 	report := Report{
-		Table: tables.New[int](len(rowValues), len(columnValues)),
+		Table:   tables.New[int](len(rowValues), len(columnValues)),
 		rows:    rowValues,
 		columns: columnValues,
 	}
@@ -133,7 +176,7 @@ func NewReport(a *Aggregator, rows, columns ReportDimension) Report {
 		for column := range columnValues {
 			entry := 0
 			for key, count := range a.All() {
-				if rows.match(key, rowValues[row]) && columns.match(key, columnValues[column]) {
+				if filter(key) && rows.match(key, rowValues[row]) && columns.match(key, columnValues[column]) {
 					entry += count
 				}
 			}

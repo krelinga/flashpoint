@@ -106,7 +106,9 @@ func main() {
 		},
 	})
 
-	report := NewReport(a, ReportProperty("Outcome"), ReportParam("Distance"))
+	report := NewReport(a, ReportProperty("Outcome"), ReportParam("Distance"), func(key AggregateKey) bool {
+		return key.HasParamValue("VolleyPlanner", "PairingVolleyPlanner")
+	})
 	reportTable := report.ToTable()
 	fmt.Println(tables.PrettyString(reportTable, tables.PrettyOptions[string]{
 		Title: "Outcomes By Distance with Basic and Pairing volleys",
