@@ -111,10 +111,10 @@ func main() {
 	})
 	reportTable := report.ToTable()
 	fmt.Println(tables.PrettyString(reportTable, tables.PrettyOptions[string]{
-		Title: "Outcomes By Distance with Basic and Pairing volleys",
-		UTF8: true,
-		Box: true,
-		HeaderRow: true,
+		Title:        "Outcomes By Distance with Pairing volleys",
+		UTF8:         true,
+		Box:          true,
+		HeaderRow:    true,
 		HeaderColumn: true,
 	}))
 }
