@@ -11,7 +11,6 @@ import (
 
 type ReportDimension interface {
 	readValues(AggregateKey) iter.Seq[string]
-	findValues(*Aggregator) []string
 	match(aggregateKey AggregateKey, value string) bool
 }
 
@@ -27,20 +26,6 @@ func (r ReportParam) readValues(key AggregateKey) iter.Seq[string] {
 			}
 		}
 	}
-}
-
-func (r ReportParam) findValues(a *Aggregator) []string {
-	found := map[string]struct{}{}
-	for key := range a.Keys() {
-		for _, paramValue := range key.Params {
-			if paramValue.Key == string(r) {
-				found[paramValue.Value] = struct{}{}
-			}
-		}
-	}
-	out := slices.Collect(maps.Keys(found))
-	slices.Sort(out)
-	return out
 }
 
 func (r ReportParam) match(key AggregateKey, value string) bool {
@@ -64,20 +49,6 @@ func (r ReportProperty) readValues(key AggregateKey) iter.Seq[string] {
 			}
 		}
 	}
-}
-
-func (r ReportProperty) findValues(a *Aggregator) []string {
-	found := map[string]struct{}{}
-	for key := range a.Keys() {
-		for _, propertyValue := range key.Properties {
-			if propertyValue.Key == string(r) {
-				found[propertyValue.Value] = struct{}{}
-			}
-		}
-	}
-	out := slices.Collect(maps.Keys(found))
-	slices.Sort(out)
-	return out
 }
 
 func (r ReportProperty) match(key AggregateKey, value string) bool {
