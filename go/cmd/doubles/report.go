@@ -11,7 +11,6 @@ import (
 
 type ReportDimension interface {
 	readValues(AggregateKey) iter.Seq[string]
-	match(aggregateKey AggregateKey, value string) bool
 }
 
 type ReportParam string
@@ -28,15 +27,6 @@ func (r ReportParam) readValues(key AggregateKey) iter.Seq[string] {
 	}
 }
 
-func (r ReportParam) match(key AggregateKey, value string) bool {
-	for _, param := range key.Params {
-		if param.Key == string(r) && param.Value == value {
-			return true
-		}
-	}
-	return false
-}
-
 type ReportProperty string
 
 func (r ReportProperty) readValues(key AggregateKey) iter.Seq[string] {
@@ -49,15 +39,6 @@ func (r ReportProperty) readValues(key AggregateKey) iter.Seq[string] {
 			}
 		}
 	}
-}
-
-func (r ReportProperty) match(key AggregateKey, value string) bool {
-	for _, property := range key.Properties {
-		if property.Key == string(r) && property.Value == value {
-			return true
-		}
-	}
-	return false
 }
 
 type Report struct {
