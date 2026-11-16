@@ -143,11 +143,19 @@ func NewReport(a *Aggregator, rows, columns ReportDimension, filter ReportFilter
 		rows:    rowValues,
 		columns: columnValues,
 	}
+	matchValue := func(key AggregateKey, dim ReportDimension, wantValue string) bool {
+		for value := range dim.readValues(key) {
+			if value == wantValue {
+				return true
+			}
+		}
+		return false
+	}
 	for row := range rowValues {
 		for column := range columnValues {
 			entry := 0
 			for key, count := range a.All() {
-				if filter(key) && rows.match(key, rowValues[row]) && columns.match(key, columnValues[column]) {
+				if filter(key) && matchValue(key, rows, rowValues[row]) && matchValue(key, columns, columnValues[column]) {
 					entry += count
 				}
 			}
