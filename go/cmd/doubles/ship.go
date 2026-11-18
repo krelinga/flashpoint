@@ -7,6 +7,13 @@ import (
 	"github.com/krelinga/flashpoint/go/dice"
 )
 
+type Box bool
+
+const (
+	BoxStress Box = true
+	BoxCrit   Box = false
+)
+
 type Ship struct {
 	Name string
 	Crew dice.ModelPool
@@ -16,12 +23,14 @@ type Ship struct {
 	BarrierDamage       int
 	Armor               int
 	Hull                int
+	HullBoxes           []Box
 	Core                int
+	CoreBoxes           []Box
 	OtherBarriersMax    []int
 	OtherBarriersDamage []int
 
-	Stress    int
-	StressMax int
+	Stress         int
+	StressMax      int
 	StressRecovery int
 
 	Weapons []*Weapon
