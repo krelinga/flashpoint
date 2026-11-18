@@ -28,6 +28,7 @@ func main() {
 			5,
 		},
 		StressMax: 6,
+		StressRecovery: 2,
 		Weapons: []*Weapon{
 			WeaponLaserMk2,
 			WeaponLaserMk2,
@@ -62,6 +63,7 @@ func main() {
 			5,
 		},
 		StressMax: 7,
+		StressRecovery: 3,
 		Weapons: []*Weapon{
 			WeaponLaserMk3,
 			WeaponLaserMk3,

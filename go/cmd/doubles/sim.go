@@ -153,6 +153,11 @@ func (s Simulation) RunOne() Result {
 				})
 			}
 		}
+
+		// Clear stress.
+		for _, ship := range ships {
+			ship.Stress = max(0, ship.Stress - ship.StressRecovery)
+		}
 	}
 	return Result{
 		Ships:  ships,

@@ -22,6 +22,7 @@ type Ship struct {
 
 	Stress    int
 	StressMax int
+	StressRecovery int
 
 	Weapons []*Weapon
 
