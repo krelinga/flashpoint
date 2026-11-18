@@ -11,14 +11,16 @@ type Ship struct {
 	Name string
 	Crew dice.ModelPool
 
-	Aspect  int
-	Barrier int
-	Armor   int
-	Hull    int
-	Core    int
-	OtherBarriers []int
+	Aspect              int
+	BarrierMax          int
+	BarrierDamage       int
+	Armor               int
+	Hull                int
+	Core                int
+	OtherBarriersMax    []int
+	OtherBarriersDamage []int
 
-	Stress int
+	Stress    int
 	StressMax int
 
 	Weapons []*Weapon
@@ -31,7 +33,14 @@ type Ship struct {
 	NumPointDefense       int
 	PointDefenseThreshold int
 
-	AI bool
+	// Abilities
+	AI           bool
+	BarrierBoost bool
+
+	// Traits
+	ImprovedBarrierGenerator bool
+
+	Engineering Engineering
 }
 
 func (s *Ship) Clone() *Ship {
@@ -73,14 +82,52 @@ func (d Damage) String() string {
 	return strings.Join(parts, " ")
 }
 
+func (s *Ship) checkOtherBarrierIdx(idx int) {
+	if idx < 0 || idx >= len(s.OtherBarriersMax) {
+		panic("idx out of range")
+	}
+}
+
+func (s *Ship) GetOtherBarrierDamage(idx int) int {
+	s.checkOtherBarrierIdx(idx)
+	if s.OtherBarriersDamage == nil {
+		return 0
+	}
+	return s.OtherBarriersDamage[idx]
+}
+
+func (s *Ship) RemainingOtherBarrier(idx int) int {
+	s.checkOtherBarrierIdx(idx)
+	return s.OtherBarriersMax[idx] - s.GetOtherBarrierDamage(idx)
+}
+
+func (s *Ship) DamageOtherBarrier(idx int, damage int) {
+	s.checkOtherBarrierIdx(idx)
+	if damage < 0 || damage > s.RemainingOtherBarrier(idx) {
+		panic("damage out of range")
+	}
+	if s.OtherBarriersDamage == nil {
+		s.OtherBarriersDamage = make([]int, len(s.OtherBarriersMax))
+	}
+	s.OtherBarriersDamage[idx] += damage
+}
+
+func (s *Ship) RemainingBarrier() int {
+	return s.BarrierMax - s.BarrierDamage
+}
+
+func (s *Ship) RemainingStress() int {
+	return s.StressMax - s.Stress
+}
+
 func (s *Ship) TakeDamage(damage int) Damage {
 	d := Damage{
 		Destroyed: s.IsDestroyed(),
 	}
-	if barrierDamage := min(damage, s.Barrier); barrierDamage > 0 {
-		s.Barrier -= barrierDamage
-		damage -= barrierDamage
-		d.Barrier = barrierDamage
+	if newBarrierDamage := min(damage, s.RemainingBarrier()); newBarrierDamage > 0 {
+		s.BarrierDamage += newBarrierDamage
+		damage -= newBarrierDamage
+		d.Barrier = newBarrierDamage
 	}
 
 	if s.Armor >= damage {

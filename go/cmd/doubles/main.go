@@ -12,14 +12,14 @@ func main() {
 	const janusName = "Janus"
 	const griffinName = "Griffin"
 	griffin := &Ship{
-		Name:    griffinName,
-		Crew:    dice.D8(),
-		Aspect:  11,
-		Barrier: 7,
-		Armor:   3,
-		Hull:    10,
-		Core:    16,
-		OtherBarriers: []int{
+		Name:       griffinName,
+		Crew:       dice.D8(),
+		Aspect:     11,
+		BarrierMax: 7,
+		Armor:      3,
+		Hull:       10,
+		Core:       16,
+		OtherBarriersMax: []int{
 			// front sides
 			6, 6,
 			// rear sides
@@ -41,17 +41,19 @@ func main() {
 		NumPointDefense:       2,
 		PointDefenseThreshold: 6,
 		AI:                    true,
+		BarrierBoost:          true,
+		Engineering:           MaxEngineering{},
 	}
 
 	janus := &Ship{
-		Name:    janusName,
-		Crew:    dice.D8(),
-		Aspect:  11,
-		Barrier: 10,
-		Armor:   3,
-		Hull:    15,
-		Core:    12,
-		OtherBarriers: []int{
+		Name:       janusName,
+		Crew:       dice.D8(),
+		Aspect:     11,
+		BarrierMax: 10,
+		Armor:      3,
+		Hull:       15,
+		Core:       12,
+		OtherBarriersMax: []int{
 			// front sides
 			9, 9,
 			// rear sides
@@ -67,9 +69,12 @@ func main() {
 			WeaponLaserMk3,
 			WeaponPulseLaserMk2,
 		},
-		PointDefense:          dice.D8(),
-		NumPointDefense:       3,
-		PointDefenseThreshold: 6,
+		PointDefense:             dice.D8(),
+		NumPointDefense:          3,
+		PointDefenseThreshold:    6,
+		BarrierBoost:             true,
+		ImprovedBarrierGenerator: true,
+		Engineering:              MaxEngineering{},
 	}
 
 	sim := Simulation{

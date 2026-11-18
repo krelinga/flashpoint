@@ -47,6 +47,9 @@ func (s Simulation) RunOne() Result {
 	ships := make([]*Ship, 2)
 	for i, ship := range s.Ships {
 		ships[i] = ship.Clone()
+		if ships[i].Engineering == nil {
+			ships[i].Engineering = NoEngineering{}
+		}
 	}
 
 	salvoQueue := &SalvoQueue{}
@@ -77,6 +80,12 @@ func (s Simulation) RunOne() Result {
 		rounds++
 		logger.Log(NewRoundEvent{Round: rounds})
 		roundLogger := logger.Child()
+
+		// TODO: log engineering phase outcomes.
+		for _, ship := range ships {
+			ship.Engineering.DoEngineering(ship)
+		}
+
 		turnOrder := rollInitiative()
 		roundLogger.Log(InitiativeEvent{Winner: turnOrder[0]})
 
