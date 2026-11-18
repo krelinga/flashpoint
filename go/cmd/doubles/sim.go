@@ -131,7 +131,7 @@ func (s Simulation) RunOne() Result {
 				salvoQueue.Push(&Salvo{
 					Target:       target,
 					ThreatValue:  ship.SalvoThreat,
-					ArrivalRound: rounds + 1,
+					ArrivalRound: s.Distance.GetMissileArrivalRound(rounds),
 				})
 				ship.SalvoAmmo--
 			}
