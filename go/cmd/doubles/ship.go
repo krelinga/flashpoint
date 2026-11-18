@@ -16,6 +16,10 @@ type Ship struct {
 	Armor   int
 	Hull    int
 	Core    int
+	OtherBarriers []int
+
+	Stress int
+	StressMax int
 
 	Weapons []*Weapon
 

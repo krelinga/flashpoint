@@ -19,6 +19,15 @@ func main() {
 		Armor:   3,
 		Hull:    10,
 		Core:    16,
+		OtherBarriers: []int{
+			// front sides
+			6, 6,
+			// rear sides
+			5, 5,
+			// aft
+			5,
+		},
+		StressMax: 6,
 		Weapons: []*Weapon{
 			WeaponLaserMk2,
 			WeaponLaserMk2,
@@ -42,6 +51,15 @@ func main() {
 		Armor:   3,
 		Hull:    15,
 		Core:    12,
+		OtherBarriers: []int{
+			// front sides
+			9, 9,
+			// rear sides
+			7, 7,
+			// aft
+			5,
+		},
+		StressMax: 7,
 		Weapons: []*Weapon{
 			WeaponLaserMk3,
 			WeaponLaserMk3,
