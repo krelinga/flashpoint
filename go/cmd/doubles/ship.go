@@ -23,9 +23,9 @@ type Ship struct {
 	BarrierDamage       int
 	Armor               int
 	Hull                int
-	HullBoxes           []Box
+	HullBoxes           map[int]Box
 	Core                int
-	CoreBoxes           []Box
+	CoreBoxes           map[int]Box
 	OtherBarriersMax    []int
 	OtherBarriersDamage []int
 
