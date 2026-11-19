@@ -165,19 +165,30 @@ func (s *Ship) TakeDamage(damage int) Damage {
 		d.ArmorReduction = oldArmor - s.Armor
 	}
 
-	handleBoxes := func(damage int, boxes map[int]Box) {
-		// TODO
+	handleBoxes := func(oldDamage, newDamage int, boxes map[int]Box) {
+		totalDamage := oldDamage + newDamage
+		for i := oldDamage; i < totalDamage; i++ {
+			if boxType, ok := boxes[i]; ok {
+				switch boxType {
+				case BoxCrit:
+					// TODO
+				case BoxStress:
+					d.Stress++
+					s.Stress++
+				}
+			}
+		}
 	}
 
 	if hullDamage := min(damage, s.RemainingHull()); hullDamage > 0 {
-		handleBoxes(hullDamage, s.HullBoxes)
+		handleBoxes(s.HullDamage, hullDamage, s.HullBoxes)
 		s.HullDamage += hullDamage
 		damage -= hullDamage
 		d.Hull = hullDamage
 	}
 
 	if coreDamage := min(damage, s.CoreMax); coreDamage > 0 {
-		handleBoxes(coreDamage, s.CoreBoxes)
+		handleBoxes(s.CoreDamage, coreDamage, s.CoreBoxes)
 		s.CoreDamage += coreDamage
 		d.Core = coreDamage
 	}
