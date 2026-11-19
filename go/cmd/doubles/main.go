@@ -18,7 +18,18 @@ func main() {
 		BarrierMax: 7,
 		Armor:      3,
 		Hull:       10,
-		Core:       16,
+		HullBoxes: map[int]Box{
+			2: BoxStress,
+			9: BoxCrit,
+		},
+		Core: 16,
+		CoreBoxes: map[int]Box{
+			1:  BoxCrit,
+			3:  BoxCrit,
+			8:  BoxStress,
+			10: BoxCrit,
+			14: BoxCrit,
+		},
 		OtherBarriersMax: []int{
 			// front sides
 			6, 6,
@@ -27,7 +38,7 @@ func main() {
 			// aft
 			5,
 		},
-		StressMax: 6,
+		StressMax:      6,
 		StressRecovery: 2,
 		Weapons: []*Weapon{
 			WeaponLaserMk2,
@@ -53,7 +64,19 @@ func main() {
 		BarrierMax: 10,
 		Armor:      3,
 		Hull:       15,
-		Core:       12,
+		HullBoxes: map[int]Box{
+			4:  BoxStress,
+			6:  BoxCrit,
+			8:  BoxStress,
+			12: BoxCrit,
+		},
+		Core: 12,
+		CoreBoxes: map[int]Box{
+			2: BoxCrit,
+			4: BoxCrit,
+			6: BoxCrit,
+			9: BoxCrit,
+		},
 		OtherBarriersMax: []int{
 			// front sides
 			9, 9,
@@ -62,7 +85,7 @@ func main() {
 			// aft
 			5,
 		},
-		StressMax: 7,
+		StressMax:      7,
 		StressRecovery: 3,
 		Weapons: []*Weapon{
 			WeaponLaserMk3,
