@@ -22,9 +22,11 @@ type Ship struct {
 	BarrierMax          int
 	BarrierDamage       int
 	Armor               int
-	Hull                int
+	HullMax             int
+	HullDamage          int
 	HullBoxes           map[int]Box
-	Core                int
+	CoreMax             int
+	CoreDamage          int
 	CoreBoxes           map[int]Box
 	OtherBarriersMax    []int
 	OtherBarriersDamage []int
@@ -138,6 +140,10 @@ func (s *Ship) RemainingStress() int {
 	return s.StressMax - s.Stress
 }
 
+func (s *Ship) RemainingHull() int {
+	return s.HullMax - s.HullDamage
+}
+
 func (s *Ship) TakeDamage(damage int) Damage {
 	d := Damage{
 		Destroyed: s.IsDestroyed(),
@@ -159,14 +165,20 @@ func (s *Ship) TakeDamage(damage int) Damage {
 		d.ArmorReduction = oldArmor - s.Armor
 	}
 
-	if hullDamage := min(damage, s.Hull); hullDamage > 0 {
-		s.Hull -= hullDamage
+	handleBoxes := func(damage int, boxes map[int]Box) {
+		// TODO
+	}
+
+	if hullDamage := min(damage, s.RemainingHull()); hullDamage > 0 {
+		handleBoxes(hullDamage, s.HullBoxes)
+		s.HullDamage += hullDamage
 		damage -= hullDamage
 		d.Hull = hullDamage
 	}
 
-	if coreDamage := min(damage, s.Core); coreDamage > 0 {
-		s.Core -= coreDamage
+	if coreDamage := min(damage, s.CoreMax); coreDamage > 0 {
+		handleBoxes(coreDamage, s.CoreBoxes)
+		s.CoreDamage += coreDamage
 		d.Core = coreDamage
 	}
 
@@ -174,6 +186,10 @@ func (s *Ship) TakeDamage(damage int) Damage {
 	return d
 }
 
+func (s *Ship) RemainingCore() int {
+	return s.CoreMax - s.CoreDamage
+}
+
 func (s *Ship) IsDestroyed() bool {
-	return s.Core <= 0
+	return s.RemainingCore() <= 0
 }

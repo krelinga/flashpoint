@@ -17,12 +17,12 @@ func main() {
 		Aspect:     11,
 		BarrierMax: 7,
 		Armor:      3,
-		Hull:       10,
+		HullMax:    10,
 		HullBoxes: map[int]Box{
 			2: BoxStress,
 			9: BoxCrit,
 		},
-		Core: 16,
+		CoreMax: 16,
 		CoreBoxes: map[int]Box{
 			1:  BoxCrit,
 			3:  BoxCrit,
@@ -63,14 +63,14 @@ func main() {
 		Aspect:     11,
 		BarrierMax: 10,
 		Armor:      3,
-		Hull:       15,
+		HullMax:    15,
 		HullBoxes: map[int]Box{
 			4:  BoxStress,
 			6:  BoxCrit,
 			8:  BoxStress,
 			12: BoxCrit,
 		},
-		Core: 12,
+		CoreMax: 12,
 		CoreBoxes: map[int]Box{
 			2: BoxCrit,
 			4: BoxCrit,
