@@ -64,6 +64,8 @@ type Damage struct {
 	ArmorReduction int
 	Hull           int
 	Core           int
+	Stress         int
+	Crits          int
 	Destroyed      bool
 }
 
@@ -88,6 +90,12 @@ func (d Damage) String() string {
 	}
 	if d.Core > 0 {
 		parts = append(parts, fmt.Sprintf("Core: %d", d.Core))
+	}
+	if d.Stress > 0 {
+		parts = append(parts, fmt.Sprintf("Stress: %d", d.Stress))
+	}
+	if d.Crits > 0 {
+		parts = append(parts, fmt.Sprintf("Crits: %d", d.Crits))
 	}
 	return strings.Join(parts, " ")
 }
