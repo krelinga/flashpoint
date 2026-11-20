@@ -38,7 +38,7 @@ func main() {
 			// aft
 			5,
 		},
-		CritTable: TerranCritTable,
+		CritTable:      TerranCritTable,
 		StressMax:      6,
 		StressRecovery: 2,
 		Weapons: []*Weapon{
@@ -54,6 +54,7 @@ func main() {
 		NumPointDefense:       2,
 		PointDefenseThreshold: 6,
 		AI:                    true,
+		Rugged:                true,
 		BarrierBoost:          true,
 		Engineering:           MaxEngineering{},
 	}
@@ -86,7 +87,7 @@ func main() {
 			// aft
 			5,
 		},
-		CritTable: KuhnCritTable,
+		CritTable:      KuhnCritTable,
 		StressMax:      7,
 		StressRecovery: 3,
 		Weapons: []*Weapon{

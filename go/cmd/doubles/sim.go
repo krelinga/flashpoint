@@ -111,7 +111,7 @@ func (s Simulation) RunOne() Result {
 			}
 			if adjustedThreat := event.AdjustedThreat(); adjustedThreat > 0 {
 				damage := SalvoDamage(adjustedThreat)
-				event.Damage = ship.TakeDamage(damage)
+				event.Damage = ship.TakeDamage(damage, s.Roller)
 			}
 			roundLogger.Log(event)
 		}
@@ -186,7 +186,7 @@ func (s Simulation) fireVolley(attacker, target *Ship, volley Volley, theRange i
 	total := results.Total()
 	event.Roll = total
 	if total >= target.Aspect {
-		event.Damage = target.TakeDamage(volley.Damage(attacker))
+		event.Damage = target.TakeDamage(volley.Damage(attacker), s.Roller)
 	}
 	logger.Log(event)
 }

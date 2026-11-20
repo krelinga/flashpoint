@@ -1,6 +1,8 @@
 package main
 
-type CritTable func(int) Crit
+import "github.com/krelinga/flashpoint/go/dice"
+
+type CritTable func(int, dice.Roller) Crit
 
 type Crit struct {
 	Name  string
@@ -13,7 +15,7 @@ func normalizeCritResult(result int) int {
 	return result
 }
 
-func KuhnCritTable(result int) Crit {
+func KuhnCritTable(result int, roller dice.Roller) Crit {
 	result = normalizeCritResult(result)
 	switch result {
 	case 0:
@@ -140,7 +142,7 @@ func KuhnCritTable(result int) Crit {
 				// TODO: there's probably a more-direct way to do this.
 				s.Armor = 0
 				for !s.IsDestroyed() {
-					s.TakeDamage(1)
+					s.TakeDamage(1, roller)
 				}
 				// TODO: other crit effects
 			},
@@ -150,7 +152,7 @@ func KuhnCritTable(result int) Crit {
 	panic("this code should be unreachable")
 }
 
-func TerranCritTable(result int) Crit {
+func TerranCritTable(result int, roller dice.Roller) Crit {
 	result = normalizeCritResult(result)
 	switch result {
 	case 0:
@@ -270,7 +272,7 @@ func TerranCritTable(result int) Crit {
 				// TODO: there's probably a more-direct way to do this.
 				s.Armor = 0
 				for !s.IsDestroyed() {
-					s.TakeDamage(1)
+					s.TakeDamage(1, roller)
 				}
 				// TODO: other crit effects
 			},

@@ -49,6 +49,7 @@ type Ship struct {
 	// Abilities
 	AI           bool
 	BarrierBoost bool
+	Rugged       bool
 
 	// Traits
 	ImprovedBarrierGenerator bool
@@ -145,7 +146,7 @@ func (s *Ship) RemainingHull() int {
 	return s.HullMax - s.HullDamage
 }
 
-func (s *Ship) TakeDamage(damage int) Damage {
+func (s *Ship) TakeDamage(damage int, roller dice.Roller) Damage {
 	d := Damage{
 		Destroyed: s.IsDestroyed(),
 	}
@@ -172,7 +173,18 @@ func (s *Ship) TakeDamage(damage int) Damage {
 			if boxType, ok := boxes[i]; ok {
 				switch boxType {
 				case BoxCrit:
-					// TODO
+					if s.CritTable == nil {
+						break
+					}
+					d.Crits++
+					critResult := dice.Roll(dice.D10(), roller).Total() + s.Stress
+					if s.Rugged {
+						critResult -= 3
+					}
+					crit := s.CritTable(critResult, roller)
+					if crit.Apply != nil {
+						crit.Apply(s)
+					}
 				case BoxStress:
 					d.Stress++
 					s.Stress++
@@ -182,16 +194,16 @@ func (s *Ship) TakeDamage(damage int) Damage {
 	}
 
 	if hullDamage := min(damage, s.RemainingHull()); hullDamage > 0 {
-		handleBoxes(s.HullDamage, hullDamage, s.HullBoxes)
+		oldHullDamage := s.HullDamage
 		s.HullDamage += hullDamage
 		damage -= hullDamage
-		d.Hull = hullDamage
+		handleBoxes(oldHullDamage, hullDamage, s.HullBoxes)
 	}
 
 	if coreDamage := min(damage, s.CoreMax); coreDamage > 0 {
-		handleBoxes(s.CoreDamage, coreDamage, s.CoreBoxes)
+		oldCoreDamage := s.CoreDamage
 		s.CoreDamage += coreDamage
-		d.Core = coreDamage
+		handleBoxes(oldCoreDamage, coreDamage, s.CoreBoxes)
 	}
 
 	d.Destroyed = s.IsDestroyed()
