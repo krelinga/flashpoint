@@ -38,6 +38,7 @@ func main() {
 			// aft
 			5,
 		},
+		CritTable: TerranCritTable,
 		StressMax:      6,
 		StressRecovery: 2,
 		Weapons: []*Weapon{
@@ -85,6 +86,7 @@ func main() {
 			// aft
 			5,
 		},
+		CritTable: KuhnCritTable,
 		StressMax:      7,
 		StressRecovery: 3,
 		Weapons: []*Weapon{

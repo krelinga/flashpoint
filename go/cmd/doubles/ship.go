@@ -30,6 +30,7 @@ type Ship struct {
 	CoreBoxes           map[int]Box
 	OtherBarriersMax    []int
 	OtherBarriersDamage []int
+	CritTable           CritTable
 
 	Stress         int
 	StressMax      int
