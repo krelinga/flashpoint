@@ -7,33 +7,54 @@ import (
 
 type Logger interface {
 	Log(Event)
-	Child() Logger
+	Push()
+	Pop()
+	Balanced() bool
 }
 
 type Event interface {
 	Summary() string
 }
 
-type NullLogger struct{}
+type NullLogger struct{
+	depth int
+}
 
-func (_ NullLogger) Log(Event) {}
+func (_ *NullLogger) Log(Event) {}
 
-func (_ NullLogger) Child() Logger {
-	return NullLogger{}
+func (l *NullLogger) Push() {
+	l.depth++
+}
+
+func (l *NullLogger) Pop() {
+	l.depth--
+	if l.depth < 0 {
+		panic("Pop() without corresponding Push()")
+	}
+}
+
+func (l *NullLogger) Balanced() bool {
+	return l.depth == 0
 }
 
 type ConsoleLogger struct {
 	depth int
 }
 
-func (l ConsoleLogger) Log(e Event) {
+func (l *ConsoleLogger) Log(e Event) {
 	prefix := strings.Repeat("  ", l.depth)
 	fmt.Println(prefix + e.Summary())
 }
 
-func (l ConsoleLogger) Child() Logger {
-	child := ConsoleLogger{depth: l.depth + 1}
-	return child
+func (l *ConsoleLogger) Push() {
+	l.depth++
+}
+
+func (l *ConsoleLogger) Pop() {
+	l.depth--
+	if l.depth < 0 {
+		panic("Pop() called without corresponding Push()")
+	}
 }
 
 type InitiativeEvent struct {

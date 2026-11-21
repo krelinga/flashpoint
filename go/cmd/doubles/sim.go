@@ -36,7 +36,7 @@ func (s Simulation) RunOne() Result {
 		panic("Simulation requires a non-nil distance")
 	}
 
-	var logger Logger = NullLogger{}
+	var logger Logger = &NullLogger{}
 	if s.Logger != nil {
 		logger = s.Logger
 	}
@@ -79,85 +79,91 @@ func (s Simulation) RunOne() Result {
 	for !done() {
 		rounds++
 		logger.Log(NewRoundEvent{Round: rounds})
-		roundLogger := logger.Child()
+		func() {
+			logger.Push()
+			defer logger.Pop()
 
-		// TODO: log engineering phase outcomes.
-		for _, ship := range ships {
-			ship.Engineering.DoEngineering(ship)
-		}
-
-		turnOrder := rollInitiative()
-		roundLogger.Log(InitiativeEvent{Winner: turnOrder[0]})
-
-		salvosThisRound := salvoQueue.PopAll(rounds)
-		for _, ship := range turnOrder {
-			if ship.IsDestroyed() {
-				continue
-			}
-			event := PDCTurnEvent{Target: ship}
-			for _, salvo := range salvosThisRound {
-				if salvo.Target == ship {
-					event.BaseThreat += salvo.ThreatValue
-				}
-			}
-			if event.BaseThreat == 0 {
-				continue
-			}
-			for range ship.NumPointDefense {
-				result := dice.Roll(ship.PointDefense, s.Roller).Total()
-				if result >= ship.PointDefenseThreshold {
-					event.PdcHits++
-				}
-			}
-			if adjustedThreat := event.AdjustedThreat(); adjustedThreat > 0 {
-				damage := SalvoDamage(adjustedThreat)
-				event.Damage = ship.TakeDamage(damage, s.Roller)
-			}
-			roundLogger.Log(event)
-		}
-		theRange := s.Distance.GetDistance(rounds)
-
-		for i, ship := range turnOrder {
-			if ship.IsDestroyed() {
-				continue
-			}
-			roundLogger.Log(WeaponAttackTurnEvent{Ship: ship})
-			turnLogger := roundLogger.Child()
-
-			target := turnOrder[(i+1)%len(turnOrder)]
-			volleys := volleyPlanner.PlanVolleys(ship, target, theRange)
-			volleys.panicIfInvalidAiUsage(ship.AI)
-			for _, volley := range volleys {
-				s.fireVolley(ship, target, volley, theRange, turnLogger)
+			// TODO: log engineering phase outcomes.
+			for _, ship := range ships {
+				ship.Engineering.DoEngineering(ship)
 			}
 
-			totalSalvos := 0
-			for range ship.SalvosPerTurn {
-				if ship.SalvoAmmo == 0 {
+			turnOrder := rollInitiative()
+			logger.Log(InitiativeEvent{Winner: turnOrder[0]})
+
+			salvosThisRound := salvoQueue.PopAll(rounds)
+			for _, ship := range turnOrder {
+				if ship.IsDestroyed() {
 					continue
 				}
-				totalSalvos++
-				salvoQueue.Push(&Salvo{
-					Target:       target,
-					ThreatValue:  ship.SalvoThreat,
-					ArrivalRound: s.Distance.GetMissileArrivalRound(rounds),
-				})
-				ship.SalvoAmmo--
+				event := PDCTurnEvent{Target: ship}
+				for _, salvo := range salvosThisRound {
+					if salvo.Target == ship {
+						event.BaseThreat += salvo.ThreatValue
+					}
+				}
+				if event.BaseThreat == 0 {
+					continue
+				}
+				for range ship.NumPointDefense {
+					result := dice.Roll(ship.PointDefense, s.Roller).Total()
+					if result >= ship.PointDefenseThreshold {
+						event.PdcHits++
+					}
+				}
+				if adjustedThreat := event.AdjustedThreat(); adjustedThreat > 0 {
+					damage := SalvoDamage(adjustedThreat)
+					event.Damage = ship.TakeDamage(damage, s.Roller)
+				}
+				logger.Log(event)
 			}
-			if totalSalvos > 0 {
-				turnLogger.Log(SalvoLaunchEvent{
-					Attacker:    ship,
-					Target:      target,
-					SalvoThreat: ship.SalvoThreat,
-					NumSalvos:   totalSalvos,
-				})
-			}
-		}
+			theRange := s.Distance.GetDistance(rounds)
 
-		// Clear stress.
-		for _, ship := range ships {
-			ship.Stress = max(0, ship.Stress - ship.StressRecovery)
-		}
+			for i, ship := range turnOrder {
+				if ship.IsDestroyed() {
+					continue
+				}
+				logger.Log(WeaponAttackTurnEvent{Ship: ship})
+				func() {
+					logger.Push()
+					defer logger.Pop()
+
+					target := turnOrder[(i+1)%len(turnOrder)]
+					volleys := volleyPlanner.PlanVolleys(ship, target, theRange)
+					volleys.panicIfInvalidAiUsage(ship.AI)
+					for _, volley := range volleys {
+						s.fireVolley(ship, target, volley, theRange, logger)
+					}
+
+					totalSalvos := 0
+					for range ship.SalvosPerTurn {
+						if ship.SalvoAmmo == 0 {
+							continue
+						}
+						totalSalvos++
+						salvoQueue.Push(&Salvo{
+							Target:       target,
+							ThreatValue:  ship.SalvoThreat,
+							ArrivalRound: s.Distance.GetMissileArrivalRound(rounds),
+						})
+						ship.SalvoAmmo--
+					}
+					if totalSalvos > 0 {
+						logger.Log(SalvoLaunchEvent{
+							Attacker:    ship,
+							Target:      target,
+							SalvoThreat: ship.SalvoThreat,
+							NumSalvos:   totalSalvos,
+						})
+					}
+				}()
+			}
+
+			// Clear stress.
+			for _, ship := range ships {
+				ship.Stress = max(0, ship.Stress-ship.StressRecovery)
+			}
+		}()
 	}
 	return Result{
 		Ships:  ships,
