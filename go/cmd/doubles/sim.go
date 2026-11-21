@@ -36,7 +36,7 @@ func (s Simulation) RunOne() Result {
 		panic("Simulation requires a non-nil distance")
 	}
 
-	var logger Logger = &NullLogger{}
+	var logger Logger = NullLogger{}
 	if s.Logger != nil {
 		logger = s.Logger
 	}

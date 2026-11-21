@@ -9,33 +9,19 @@ type Logger interface {
 	Log(Event)
 	Push()
 	Pop()
-	Balanced() bool
 }
 
 type Event interface {
 	Summary() string
 }
 
-type NullLogger struct{
-	depth int
-}
+type NullLogger struct{}
 
-func (_ *NullLogger) Log(Event) {}
+func (_ NullLogger) Log(Event) {}
 
-func (l *NullLogger) Push() {
-	l.depth++
-}
+func (_ NullLogger) Push() {}
 
-func (l *NullLogger) Pop() {
-	l.depth--
-	if l.depth < 0 {
-		panic("Pop() without corresponding Push()")
-	}
-}
-
-func (l *NullLogger) Balanced() bool {
-	return l.depth == 0
-}
+func (_ NullLogger) Pop() {}
 
 type ConsoleLogger struct {
 	depth int
@@ -55,6 +41,50 @@ func (l *ConsoleLogger) Pop() {
 	if l.depth < 0 {
 		panic("Pop() called without corresponding Push()")
 	}
+}
+
+type EventRecord struct {
+	Event    Event
+	Children *EventRecords
+}
+
+type EventRecords []*EventRecord
+
+type RecordingLogger struct {
+	EventRecords *EventRecords
+	depth int
+}
+
+func (rl *RecordingLogger) Log(event Event) {
+	if rl.EventRecords == nil {
+		return
+	}
+	tip := rl.EventRecords
+	for range rl.depth {
+		last := (*tip)[len(*tip) - 1]
+		if last.Children == nil {
+			last.Children = new(EventRecords)
+		}
+		tip = last.Children
+	}
+	*tip = append(*tip, &EventRecord{
+		Event: event,
+	})
+}
+
+func (rl *RecordingLogger) Push() {
+	rl.depth++
+}
+
+func (rl *RecordingLogger) Pop() {
+	rl.depth--
+	if rl.depth < 0 {
+		panic("Pop() called without corresponding Push()")
+	}
+}
+
+func (rl *RecordingLogger) Balanced() bool {
+	return rl.depth == 0
 }
 
 type InitiativeEvent struct {
